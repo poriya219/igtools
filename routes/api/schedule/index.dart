@@ -1,14 +1,15 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:igtools/models/ig_request.dart';
-
-import '../../../lib/state_manager.dart';
+import 'package:igtools/state_manager.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   final method = context.request.method;
 
   if (context.request.method == HttpMethod.post) {
+    print('requset!');
     final body = await context.request.json();
     final item = IGRequest(
       token: body['token'].toString(),
@@ -17,11 +18,17 @@ Future<Response> onRequest(RequestContext context) async {
       userID: body['id'].toString(),
     );
 
-    StateManager().items.add(item);
+    // Hive.init('hive');
+    // var box = await Hive.openBox('tasks');
 
+    // print('adding ${item.toString()}');
+    // await box.put(item.time, item.toString());
+
+    StateManager().items.add(item);
     return Response(
       statusCode: 201,
       body: StateManager().items.toString(),
+      // body: 'Request was set!',
     );
   }
 
