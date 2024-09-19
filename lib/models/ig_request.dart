@@ -32,4 +32,13 @@ class IGRequest {
         time: map['time'].toString(),
         userID: map['userID'].toString());
   }
+
+  static Map toMap(IGRequest data) {
+    return {
+      'token': data.token,
+      'url': data.url,
+      'time': data.time,
+      'id': data.userID,
+    };
+  }
 }

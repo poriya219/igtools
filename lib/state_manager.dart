@@ -30,9 +30,13 @@ class StateManager {
           print('send request');
           http.Response response = await http.post(
               Uri.parse(
-                  'https://igtools-ig1fjnu-poriua219.globeapp.dev/globe/send'),
-              body: each.toString());
+                  'https://igtools-zs3vzqo-poriua219.globeapp.dev/globe/send'),
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: jsonEncode(IGRequest.toMap(each)));
           print('status 1: ${response.statusCode}');
+          print('body: ${response.body}');
           if (response.statusCode == 200) {
             deletedItems.add(each);
           }
