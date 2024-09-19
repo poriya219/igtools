@@ -17,23 +17,53 @@ Future<Response> onRequest(RequestContext context) async {
       userID: body['id'].toString(),
       uid: body['uid'].toString(),
       hex: body['hex'].toString(),
+      type: body['type'].toString(),
+      data: body['data'] != null ? body['data'] as Map : {},
     );
+    String caption =
+        item.data?['caption'] != null ? item.data!['caption'].toString() : '';
+    List<String> finalUrl = ['', ''];
+    switch (item.type) {
+      case 'Story':
+        finalUrl = [
+          'https://graph.instagram.com/v20.0/${item.userID}/media?media_type=STORIES&access_token=${item.token}',
+          'https://graph.instagram.com/v20.0/${item.userID}/media_publish?media_type=STORIES&access_token=${item.token}',
+        ];
+        break;
+      case 'SinglePost':
+        finalUrl = [
+          'https://graph.instagram.com/v20.0/${item.userID}/media?access_token=${item.token}',
+          'https://graph.instagram.com/v20.0/${item.userID}/media_publish?access_token=${item.token}',
+        ];
+        break;
+      case 'CarouselPost':
+        finalUrl = [
+          'https://graph.instagram.com/v20.0/${item.userID}/media?media_type=STORIES&access_token=${item.token}',
+          'https://graph.instagram.com/v20.0/${item.userID}/media_publish?media_type=STORIES&access_token=${item.token}',
+        ];
+        break;
+      case 'Reels':
+        finalUrl = [
+          'https://graph.instagram.com/v20.0/${item.userID}/media?media_type=REELS&access_token=${item.token}',
+          'https://graph.instagram.com/v20.0/${item.userID}/media_publish?media_type=REELS&access_token=${item.token}',
+        ];
+        break;
+      default:
+        finalUrl = ['', ''];
+        break;
+    }
 
     print('send request');
-    http.Response response = await http.post(
-        Uri.parse(
-            'https://graph.instagram.com/v20.0/${item.userID}/media?media_type=STORIES&access_token=${item.token}'),
-        body: {'image_url': item.url});
+    http.Response response = await http.post(Uri.parse(finalUrl[0]),
+        body: {'image_url': item.url, 'caption': caption});
     if (response.statusCode == 200) {
       final r = jsonDecode(response.body);
       String id = r['id'].toString();
       if (id.isNotEmpty && id != 'null') {
-        http.Response response2 = await http.post(
-            Uri.parse(
-                'https://graph.instagram.com/v20.0/${item.userID}/media_publish?media_type=STORIES&access_token=${item.token}'),
-            body: {
-              'creation_id': id,
-            });
+        http.Response response2 =
+            await http.post(Uri.parse(finalUrl[1]), body: {
+          'creation_id': id,
+        });
         return Response(
           statusCode: response2.statusCode,
           body: response2.body,

@@ -31,7 +31,7 @@ class StateManager {
           print('send request');
           http.Response response = await http.post(
               Uri.parse(
-                  'https://igtools-zs3vzqo-poriua219.globeapp.dev/globe/send'),
+                  'https://igtools-j0xq7mv-poriua219.globeapp.dev/globe/send'),
               headers: {
                 'Content-Type': 'application/json',
               },
@@ -43,8 +43,11 @@ class StateManager {
           var box = await Hive.openBox('history');
           Map map = box.toMap();
           Map userHistory = map[each.uid] != null ? map[each.uid] as Map : {};
+
           userHistory[each.hex] = {
             'status': response.statusCode,
+            'time': timeString,
+            'type': each.type,
           };
           await box.put(each.uid, userHistory);
         }
