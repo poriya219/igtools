@@ -15,6 +15,8 @@ Future<Response> onRequest(RequestContext context) async {
       url: body['url'].toString(),
       time: body['time'].toString(),
       userID: body['id'].toString(),
+      uid: body['uid'].toString(),
+      hex: body['hex'].toString(),
     );
 
     print('send request');

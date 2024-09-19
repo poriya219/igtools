@@ -17,6 +17,8 @@ Future<Response> onRequest(RequestContext context) async {
       url: body['url'].toString(),
       time: body['time'].toString(),
       userID: body['id'].toString(),
+      hex: body['hex'].toString(),
+      uid: body['uid'].toString(),
     );
 
     // Hive.init('hive');

@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:igtools/models/ig_request.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
+import 'package:igtools/models/ig_request.dart';
 
 class StateManager {
   static final StateManager _instance = StateManager._internal();
@@ -35,11 +36,17 @@ class StateManager {
                 'Content-Type': 'application/json',
               },
               body: jsonEncode(IGRequest.toMap(each)));
-          print('status 1: ${response.statusCode}');
-          print('body: ${response.body}');
           if (response.statusCode == 200) {
             deletedItems.add(each);
           }
+          Hive.init('hive');
+          var box = await Hive.openBox('history');
+          Map map = box.toMap();
+          Map userHistory = map[each.uid] != null ? map[each.uid] as Map : {};
+          userHistory[each.hex] = {
+            'status': response.statusCode,
+          };
+          await box.put(each.uid, userHistory);
         }
         if (time.isBefore(now)) {
           deletedItems.add(each);
