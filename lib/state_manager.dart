@@ -30,21 +30,11 @@ class StateManager {
           print('send request');
           http.Response response = await http.post(
               Uri.parse(
-                  'https://graph.instagram.com/v20.0/${each.userID}/media?media_type=STORIES&access_token=${each.token}'),
-              body: {'image_url': each.url});
+                  'https://igtools-ig1fjnu-poriua219.globeapp.dev/globe/send'),
+              body: each.toString());
           print('status 1: ${response.statusCode}');
           if (response.statusCode == 200) {
-            final r = jsonDecode(response.body);
-            String id = r['id'].toString();
-            if (id.isNotEmpty && id != 'null') {
-              http.Response response2 = await http.post(
-                  Uri.parse(
-                      'https://graph.instagram.com/v20.0/${each.userID}/media_publish?media_type=STORIES&access_token=${each.token}'),
-                  body: {
-                    'creation_id': id,
-                  });
-              print('status 2: ${response2.statusCode}');
-            }
+            deletedItems.add(each);
           }
         }
         if (time.isBefore(now)) {

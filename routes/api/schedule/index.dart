@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
@@ -9,8 +10,8 @@ Future<Response> onRequest(RequestContext context) async {
   final method = context.request.method;
 
   if (context.request.method == HttpMethod.post) {
-    print('requset!');
-    final body = await context.request.json();
+    final st = await context.request.body();
+    final body = jsonDecode(st);
     final item = IGRequest(
       token: body['token'].toString(),
       url: body['url'].toString(),

@@ -1,4 +1,0 @@
-# crons:
-#   - id: refresh_timer
-#     schedule: '*/1 * * * *'
-#     path: '/api/refresh'
