@@ -36,14 +36,19 @@ Future<Response> onRequest(RequestContext context) async {
     Hive.init('hive');
     var box = await Hive.openBox('history');
     Map map = box.toMap();
-    Map userHistory = map[item.uid] != null ? map[item.uid] as Map : {};
+    Map userHistories = map[item.uid] != null ? map[item.uid] as Map : {};
+    Map userHistory = userHistories[item.userID] != null
+        ? userHistories[item.userID] as Map
+        : {};
 
     userHistory[item.hex] = {
       'status': 0,
       'time': item.time,
       'type': item.type,
     };
-    await box.put(item.uid, userHistory);
+    userHistories[item.userID] = userHistory;
+
+    await box.put(item.uid, userHistories);
     return Response(
       statusCode: 201,
       body: StateManager().items.toString(),

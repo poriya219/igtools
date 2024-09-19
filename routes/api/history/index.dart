@@ -11,12 +11,15 @@ Future<Response> onRequest(RequestContext context) async {
     final request = context.request;
     final params = request.uri.queryParameters;
     final uid = params['uid'] ?? '';
+    final userId = params['userId'] ?? '';
 
     if (uid.isNotEmpty) {
       Hive.init('hive');
       var box = await Hive.openBox('history');
       Map map = box.toMap();
-      Map userHistory = map[uid] != null ? map[uid] as Map : {};
+      Map userHistories = map[uid] != null ? map[uid] as Map : {};
+      Map userHistory =
+          userHistories[userId] != null ? userHistories[userId] as Map : {};
 
       return Response(
         statusCode: 200,

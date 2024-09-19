@@ -20,7 +20,6 @@ class StateManager {
     timer = Timer.periodic(Duration(minutes: 1), (Timer t) async {
       // This is the function that will be executed every 1 minutes.
       // For example, you could modify the items list periodically.
-      print('items list: $items');
       List<IGRequest> temp = List.from(items);
       List<IGRequest> deletedItems = [];
       for (IGRequest each in temp) {
@@ -42,14 +41,18 @@ class StateManager {
           Hive.init('hive');
           var box = await Hive.openBox('history');
           Map map = box.toMap();
-          Map userHistory = map[each.uid] != null ? map[each.uid] as Map : {};
+          Map userHistories = map[each.uid] != null ? map[each.uid] as Map : {};
+          Map userHistory = userHistories[each.userID] != null
+              ? userHistories[each.userID] as Map
+              : {};
 
           userHistory[each.hex] = {
             'status': response.statusCode,
             'time': timeString,
             'type': each.type,
           };
-          await box.put(each.uid, userHistory);
+          userHistories[each.userID] = userHistory;
+          await box.put(each.uid, userHistories);
         }
         if (time.isBefore(now)) {
           deletedItems.add(each);
