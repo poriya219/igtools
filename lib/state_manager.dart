@@ -30,7 +30,7 @@ class StateManager {
           print('send request');
           http.Response response = await http.post(
               Uri.parse(
-                  'https://igtools-j0xq7mv-poriua219.globeapp.dev/globe/send'),
+                  'https://igtools-z94cbbb-poriua219.globeapp.dev/globe/send'),
               headers: {
                 'Content-Type': 'application/json',
               },
