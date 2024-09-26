@@ -10,6 +10,8 @@ import 'package:uuid/uuid.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   if (context.request.method == HttpMethod.post) {
+    String d = context.read();
+    print(d);
     final st = await context.request.body();
     final body = jsonDecode(st);
     var uuid = Uuid();
