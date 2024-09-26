@@ -20,11 +20,17 @@ Future<Response> onRequest(RequestContext context) async {
       Map userHistories = map[uid] != null ? map[uid] as Map : {};
       Map userHistory =
           userHistories[userId] != null ? userHistories[userId] as Map : {};
+      Map finalHistory = {};
+      for (String _key in List.from(userHistory.keys.toList().reversed)) {
+        finalHistory[_key] = userHistory[_key];
+      }
+      // Map finalHistory = userHistory.map((k, v) => MapEntry(v, k));
+      // print('final history: $finalHistory');
 
       return Response(
         statusCode: 200,
         body: jsonEncode({
-          'history': userHistory,
+          'history': finalHistory,
         }),
         // body: 'Request was set!',
       );

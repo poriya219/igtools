@@ -8,6 +8,11 @@ environment:
 
 dependencies:
   dart_frog: ^1.1.0
+  dart_frog_auth: ^1.1.0
+  dart_jsonwebtoken: ^2.14.0
+  dotenv: ^4.2.0
+  crypto: ^3.0.0
+  mysql_client: ^0.0.27
 
 dev_dependencies:
   mocktail: ^1.0.3
