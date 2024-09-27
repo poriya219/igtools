@@ -96,6 +96,7 @@ class FrogMysqlClient {
     List accountsList = [];
     for (ResultSetRow each in accounts) {
       String e = each.typedColByName('string_value').toString();
+
       accountsList.add(e);
     }
     Map data = {
