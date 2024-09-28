@@ -16,3 +16,9 @@ build/
 coverage/
 
 hive/
+
+.env
+
+lib/env
+.env.dart
+.env.g.dart

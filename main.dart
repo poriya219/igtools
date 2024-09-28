@@ -10,7 +10,8 @@ Future<void> main() async {
 }
 
 Future<HttpServer> run(Handler handler, InternetAddress ip, int port) {
-  print('load main');
+  // print('load main');
+  print('version: 1.0.0');
   StateManager();
   // 1. Execute any custom code prior to starting the server...
 

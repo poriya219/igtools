@@ -2,10 +2,9 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:dotenv/dotenv.dart';
+import 'package:igtools/env/env.dart';
 
-var env = DotEnv(includePlatformEnvironment: true)..load();
-final String jwtSecret = env['JWT_SECRET'] ?? '';
+final String jwtSecret = Env.secret;
 
 Handler middleware(Handler handler) {
   return (context) async {

@@ -5,15 +5,14 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:dotenv/dotenv.dart';
+import 'package:igtools/env/env.dart';
 
 import '../../main.dart';
 
 FutureOr<Response> onRequest(RequestContext context) async {
   final header = context.request.headers;
   String secret = header['Authorization'] ?? '';
-  var env = DotEnv(includePlatformEnvironment: true)..load();
-  final String jwtSecret = env['JWT_SECRET']!;
+  final String jwtSecret = Env.secret;
   if (secret.isEmpty || secret != jwtSecret) {
     return Response.json(
       body: 'Authorization is required',

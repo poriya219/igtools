@@ -24,7 +24,7 @@ The users table will store user information.
 # Create the User Strings Table:
 This table will hold lists of strings for each user. We will assume that a user can have multiple strings.
 
-## CREATE TABLE accounts (
+## CREATE TABLE user_strings (
 ##   id INT AUTO_INCREMENT PRIMARY KEY,      -- Auto-incrementing unique ID
 ##   user_id INT NOT NULL,                   -- Foreign key referencing user
 ##   string_value VARCHAR(255) NOT NULL,     -- The string value
