@@ -14,7 +14,7 @@ Handler middleware(Handler handler) {
           statusCode: 403, body: 'Authorization Header is required');
     }
     final authHeader = context.request.headers['User'];
-    print('token: $authHeader');
+    // print('token: $authHeader');
     if (authHeader != null && authHeader.startsWith('Bearer ')) {
       final token = authHeader.substring('Bearer '.length);
 

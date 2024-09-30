@@ -9,6 +9,11 @@ import 'package:igtools/env/env.dart';
 import '../../main.dart';
 
 Future<Response> onRequest(RequestContext context) async {
+  if (context.request.method != HttpMethod.post) {
+    return Response.json(
+      statusCode: HttpStatus.methodNotAllowed,
+    );
+  }
   final header = context.request.headers;
   String secret = header['Authorization'] ?? '';
   final String jwtSecret = Env.secret;

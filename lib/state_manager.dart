@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:igtools/models/ig_request.dart';
+import 'package:igtools/persistence.dart';
 
 class StateManager {
   static final StateManager _instance = StateManager._internal();
@@ -30,7 +30,7 @@ class StateManager {
           print('send request');
           http.Response response = await http.post(
               Uri.parse(
-                  'https://igtools-z94cbbb-poriua219.globeapp.dev/globe/send'),
+                  'https://igtools-askr2yw-poriua219.globeapp.dev/globe/send'),
               headers: {
                 'Content-Type': 'application/json',
               },
@@ -38,21 +38,14 @@ class StateManager {
           if (response.statusCode == 200) {
             deletedItems.add(each);
           }
-          Hive.init('hive');
-          var box = await Hive.openBox('history');
-          Map map = box.toMap();
-          Map userHistories = map[each.uid] != null ? map[each.uid] as Map : {};
-          Map userHistory = userHistories[each.userID] != null
-              ? userHistories[each.userID] as Map
-              : {};
-
-          userHistory[each.hex] = {
-            'status': response.statusCode,
-            'time': timeString,
-            'type': each.type,
-          };
-          userHistories[each.userID] = userHistory;
-          await box.put(each.uid, userHistories);
+          String query =
+              'UPDATE user_request_history SET status = @status WHERE hex = @hex';
+          final mysqlClient = FrogMysqlClient();
+          await mysqlClient.connect();
+          await mysqlClient.updateData(query: query, data: {
+            'status': response.statusCode.toString(),
+            'hex': each.hex,
+          });
         }
         if (time.isBefore(now)) {
           deletedItems.add(each);
