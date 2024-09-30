@@ -35,7 +35,6 @@ Future<Response> onRequest(RequestContext context) async {
     StateManager().items.add(item);
     String query =
         'INSERT INTO user_request_history (user_id, request_date, request_type, status, hex, account_id) VALUES (@userId, NOW(), @requestType, @status, @hex, @account_id)';
-    await mysqlClient.connect();
     await mysqlClient.updateData(query: query, data: {
       'userId': int.tryParse(userId) ?? 0,
       'requestType': item.type,
