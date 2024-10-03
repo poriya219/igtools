@@ -41,3 +41,22 @@ CREATE TABLE user_request_history (
     status VARCHAR(50),                            
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+
+
+
+
+
+
+
+
+
+
+i have a mobile app for managing instagram account and i want design for 
+a signup and signin pages with email and password,
+a page for complete user information,
+and after that a home page for show user history posts and request,
+a page for purchase plan and show  user purchase history,
+a page for add instagram accounts and show added accounts,
+a page for add post with different post type,
+ a page for app settings and user settings, and a page for other app tools
