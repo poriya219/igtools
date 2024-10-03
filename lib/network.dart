@@ -18,4 +18,26 @@ class Network {
       return {};
     }
   }
+
+  Future createPayment({required String amount, required String hex}) async {
+    http.Response response =
+        await http.post(Uri.parse('https://gateway.zibal.ir/v1/request'),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'merchant': 'zibal',
+              'amount': int.parse(amount),
+              'callbackUrl': 'http://localhost:8080/payment/result',
+              'orderId': 'ZBL-$hex',
+            }));
+    print(response.statusCode);
+    print(response.body);
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return json;
+    } else {
+      return {};
+    }
+  }
 }

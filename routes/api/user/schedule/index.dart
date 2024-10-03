@@ -18,11 +18,12 @@ Future<Response> onRequest(RequestContext context) async {
     final body = jsonDecode(st);
     int index = int.tryParse(body['index'].toString()) ?? 0;
     Map igInfo = await mysqlClient.getIGAccountInfo(userId, index);
+    String igToken = igInfo['token'].toString().split('bearer ').last;
     var uuid = Uuid();
     String uuidString = uuid.v1().toString();
     String hex = uuidString.substring(0, 6).split('-').last;
     final item = IGRequest(
-      token: igInfo['token'].toString(),
+      token: igToken,
       url: body['url'].toString(),
       time: body['time'].toString(),
       userID: igInfo['id'].toString(),

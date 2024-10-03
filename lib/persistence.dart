@@ -194,6 +194,42 @@ class FrogMysqlClient {
     };
   }
 
+  Future<Map> getUserPlan(String id) async {
+    final result = await _connection!.execute(
+      Sql.named('SELECT * FROM users WHERE id = @id'),
+      parameters: {
+        'id': id,
+      },
+    );
+    bool hasPlan =
+        bool.tryParse(result.first.toColumnMap()['has_plan'].toString()) ??
+            false;
+    String expireAt = result.first.toColumnMap()['expire_at'].toString();
+    return {
+      'has_plan': hasPlan,
+      'expire_at': expireAt,
+    };
+  }
+
+  Future<void> addPayment(
+      {required String user_id,
+      required String amount,
+      required String orderId,
+      required String trackId}) async {
+    await _connection!.execute(
+      Sql.named(
+          'INSERT INTO user_purchase_history (user_id, purchase_date, amount, track_Id, status, order_Id) VALUES (@user_id, @purchase_date, @amount, @trackId, @status, @orderId)'),
+      parameters: {
+        'user_id': user_id,
+        'purchase_date': DateTime.now().toString(),
+        'amount': int.tryParse(amount) ?? 0,
+        'trackId': trackId,
+        'orderId': orderId,
+        'status': 'pending',
+      },
+    );
+  }
+
   Future<void> close() async {
     await _connection!.close();
   }
