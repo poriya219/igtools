@@ -28,16 +28,26 @@ class Network {
             body: jsonEncode({
               'merchant': 'zibal',
               'amount': int.parse(amount),
-              'callbackUrl': 'http://localhost:8080/payment/result',
+              'callbackUrl': 'https://igtoolspanel.ir/payment/result',
               'orderId': 'ZBL-$hex',
             }));
-    print(response.statusCode);
-    print(response.body);
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       return json;
     } else {
       return {};
     }
+  }
+
+  Future checkPayment(String trackId) async {
+    final response = await http.post(
+      Uri.parse('https://gateway.zibal.ir/v1/verify'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({"merchant": "zibal", "trackId": trackId}),
+    );
+    final json = jsonDecode(response.body);
+    return json;
   }
 }

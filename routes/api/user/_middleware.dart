@@ -27,7 +27,7 @@ Handler middleware(Handler handler) {
       } catch (e) {
         print('e: $e');
         return Response.json(
-          body: 'Invalid token',
+          body: e.toString(),
           statusCode: HttpStatus.forbidden,
         );
       }

@@ -20,15 +20,15 @@ class FrogMysqlClient {
     print('connect database');
     _connection = await Connection.open(
         Endpoint(
-          // host: "igtools-db",
-          host: "127.0.0.1",
+          host: "igtools-db",
+          // host: "127.0.0.1",
           port: 5432,
-          username: 'postgres',
-          // username: 'root',
-          // password: "Bqr7kKtN2GbgAajCFfU1J2Jk",
-          password: "Po219219",
-          database: 'user_management',
-          // database: 'igtools',
+          // username: 'postgres',
+          username: 'root',
+          password: "Bqr7kKtN2GbgAajCFfU1J2Jk",
+          // password: "Po219219",
+          // database: 'user_management',
+          database: 'igtools',
         ),
         settings: ConnectionSettings(
           sslMode: SslMode.disable,
@@ -215,10 +215,11 @@ class FrogMysqlClient {
       {required String user_id,
       required String amount,
       required String orderId,
+      String? planId,
       required String trackId}) async {
     await _connection!.execute(
       Sql.named(
-          'INSERT INTO user_purchase_history (user_id, purchase_date, amount, track_Id, status, order_Id) VALUES (@user_id, @purchase_date, @amount, @trackId, @status, @orderId)'),
+          'INSERT INTO user_purchase_history (user_id, purchase_date, amount, track_Id, status, order_Id, plan_id) VALUES (@user_id, @purchase_date, @amount, @trackId, @status, @orderId, @plan_id)'),
       parameters: {
         'user_id': user_id,
         'purchase_date': DateTime.now().toString(),
@@ -226,8 +227,97 @@ class FrogMysqlClient {
         'trackId': trackId,
         'orderId': orderId,
         'status': 'pending',
+        'plan_id': planId,
       },
     );
+  }
+
+  Future<Map> getPlanInfo(String id) async {
+    final result = await _connection!.execute(
+      Sql.named('SELECT * FROM plans WHERE id = @id'),
+      parameters: {
+        'id': id,
+      },
+    );
+    String name = result.first.toColumnMap()['name'].toString();
+    String description = result.first.toColumnMap()['description'].toString();
+    String duration = result.first.toColumnMap()['duration'].toString();
+    String price = result.first.toColumnMap()['price'].toString();
+    Map data = {
+      'name': name,
+      'description': description,
+      'duration': int.tryParse(duration) ?? 0,
+      'price': price,
+    };
+    return data;
+  }
+
+  Future<void> addPlan(
+      {required String name,
+      required String description,
+      required String price,
+      required String duration}) async {
+    await _connection!.execute(
+      Sql.named(
+          'INSERT INTO plans (name, description, price, duration) VALUES (@name, @description, @price, @duration)'),
+      parameters: {
+        'name': name,
+        'description': description,
+        'price': price,
+        'duration': int.tryParse(duration) ?? 0,
+      },
+    );
+  }
+
+  Future<Map> getPaymentInfo(String orderId) async {
+    final result = await _connection!.execute(
+      Sql.named('SELECT * FROM user_purchase_history WHERE order_id = @id'),
+      parameters: {
+        'id': orderId,
+      },
+    );
+    String user_id = result.first.toColumnMap()['user_id'].toString();
+    String purchase_date =
+        result.first.toColumnMap()['purchase_date'].toString();
+    String amount = result.first.toColumnMap()['amount'].toString();
+    String description = result.first.toColumnMap()['description'].toString();
+    String track_id = result.first.toColumnMap()['track_id'].toString();
+    String status = result.first.toColumnMap()['status'].toString();
+    String order_id = result.first.toColumnMap()['order_id'].toString();
+    String id = result.first.toColumnMap()['id'].toString();
+    String plan_id = result.first.toColumnMap()['plan_id'].toString();
+    Map data = {
+      'user_id': user_id,
+      'purchase_date': purchase_date,
+      'amount': amount,
+      'description': description,
+      'track_id': track_id,
+      'status': status,
+      'order_id': order_id,
+      'id': id,
+      'plan_id': plan_id,
+    };
+    return data;
+  }
+
+  Future<void> setUserPlan(
+      {required String planId, required String userId}) async {
+    final result = await _connection!.execute(
+      Sql.named('SELECT * FROM plans WHERE id = @id'),
+      parameters: {
+        'id': planId,
+      },
+    );
+    String duration = result.first.toColumnMap()['duration'].toString();
+    String query =
+        'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at WHERE id = @id';
+    await updateData(query: query, data: {
+      'has_plan': true,
+      'expire_at': DateTime.now()
+          .add(Duration(days: int.tryParse(duration) ?? 0))
+          .toString(),
+      'id': userId,
+    });
   }
 
   Future<void> close() async {

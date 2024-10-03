@@ -7,7 +7,7 @@ import 'package:igtools/models/ig_request.dart';
 import 'package:igtools/state_manager.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../../main.dart';
+import '../../../../../main.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   if (context.request.method == HttpMethod.post) {

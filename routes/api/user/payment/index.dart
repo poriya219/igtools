@@ -15,7 +15,10 @@ Future<Response> onRequest(RequestContext context) async {
   Network network = Network();
   final st = await context.request.body();
   final body = jsonDecode(st);
-  final amount = body['amount'].toString();
+  final id = body['id'].toString();
+  await mysqlClient.connect();
+  Map plan = await mysqlClient.getPlanInfo(id);
+  String amount = plan['price'].toString();
   final data = await network.createPayment(amount: amount, hex: hex);
 
   // In a real application, you would typically generate the payment URL dynamically
@@ -32,9 +35,10 @@ Future<Response> onRequest(RequestContext context) async {
         user_id: userId,
         amount: amount,
         orderId: 'ZBL-$hex',
+        planId: id,
         trackId: trackId.toString());
     return Response(
-      statusCode: HttpStatus.temporaryRedirect,
+      statusCode: HttpStatus.permanentRedirect,
       headers: {
         HttpHeaders.locationHeader:
             'https://gateway.zibal.ir/start/${trackId.toString()}',
