@@ -47,6 +47,8 @@ class Network {
       },
       body: jsonEncode({"merchant": "zibal", "trackId": trackId}),
     );
+    print('status code: ${response.statusCode}');
+    print(response.body);
     final json = jsonDecode(response.body);
     return json;
   }

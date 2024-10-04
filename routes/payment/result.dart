@@ -11,13 +11,14 @@ Future<Response> onRequest(RequestContext context) async {
   final json = await network.checkPayment(trackId);
   final orderId = json['orderId'] ?? '';
   final status = json['status'] ?? '';
+  print('status: $status');
   String query =
-      'UPDATE user_purchase_history SET status = @status WHERE order_id = @orderId';
+      'UPDATE user_purchase_history SET status = @status WHERE order_id = @order_id';
   final mysqlClient = FrogMysqlClient();
   await mysqlClient.connect();
   await mysqlClient.updateData(query: query, data: {
     'status': status,
-    'orderId': orderId,
+    'order_id': orderId,
   });
   List<int> errors = [-2, -1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   String message = !errors.contains(int.tryParse(status.toString()) ?? -2)

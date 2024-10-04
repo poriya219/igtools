@@ -20,15 +20,15 @@ class FrogMysqlClient {
     print('connect database');
     _connection = await Connection.open(
         Endpoint(
-          host: "igtools-db",
-          // host: "127.0.0.1",
+          // host: "igtools-db",
+          host: "127.0.0.1",
           port: 5432,
-          // username: 'postgres',
-          username: 'root',
-          password: "Bqr7kKtN2GbgAajCFfU1J2Jk",
-          // password: "Po219219",
-          // database: 'user_management',
-          database: 'igtools',
+          username: 'postgres',
+          // username: 'root',
+          // password: "Bqr7kKtN2GbgAajCFfU1J2Jk",
+          password: "Po219219",
+          database: 'user_management',
+          // database: 'igtools',
         ),
         settings: ConnectionSettings(
           sslMode: SslMode.disable,
@@ -271,9 +271,10 @@ class FrogMysqlClient {
 
   Future<Map> getPaymentInfo(String orderId) async {
     final result = await _connection!.execute(
-      Sql.named('SELECT * FROM user_purchase_history WHERE order_id = @id'),
+      Sql.named(
+          'SELECT * FROM user_purchase_history WHERE order_id = @order_id'),
       parameters: {
-        'id': orderId,
+        'order_id': orderId,
       },
     );
     String user_id = result.first.toColumnMap()['user_id'].toString();
@@ -309,15 +310,31 @@ class FrogMysqlClient {
       },
     );
     String duration = result.first.toColumnMap()['duration'].toString();
+    DateTime expire =
+        DateTime.now().add(Duration(days: int.tryParse(duration) ?? 0));
+    String expireAt = '${expire.year}-${expire.month}-${expire.day}';
     String query =
         'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at WHERE id = @id';
     await updateData(query: query, data: {
       'has_plan': true,
-      'expire_at': DateTime.now()
-          .add(Duration(days: int.tryParse(duration) ?? 0))
-          .toString(),
+      'expire_at': expireAt,
       'id': userId,
     });
+  }
+
+  Future<void> resetPlans() async {
+    DateTime now = DateTime.now();
+    DateTime expire = now.subtract(const Duration(days: 1));
+    String expireAt = '${expire.year}-${expire.month}-${expire.day}';
+    await _connection!.execute(
+      Sql.named(
+          'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at WHERE expire_at = @expireAt'),
+      parameters: {
+        'has_plan': false,
+        'expire_at': null,
+        'expireAt': expireAt,
+      },
+    );
   }
 
   Future<void> close() async {
