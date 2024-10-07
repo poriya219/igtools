@@ -93,8 +93,12 @@ class FrogMysqlClient {
     String lastname = result.first.toColumnMap()['lastname'].toString();
     String email = result.first.toColumnMap()['email'].toString();
     String image = result.first.toColumnMap()['image'].toString();
-    final has_plan = result.first.toColumnMap()['has_plan'].toString() == '1';
+    String expireAt = result.first.toColumnMap()['expire_at'].toString();
+    bool has_plan =
+        bool.tryParse(result.first.toColumnMap()['has_plan'].toString()) ??
+            false;
     final userId = result.first.toColumnMap()['id'];
+
     List accountsList = await getUserAccounts(id);
     Map data = {
       'firstName': firstName,
@@ -102,6 +106,7 @@ class FrogMysqlClient {
       'email': email,
       'image': image,
       'has_plan': has_plan,
+      'expire_at': expireAt,
       'userId': userId,
       'accounts': accountsList,
     };
@@ -109,11 +114,13 @@ class FrogMysqlClient {
   }
 
   Future<Map> getUserHistory(int id, String accountId) async {
+    print('id: $id');
+    print('accountId: $accountId');
     final result = await _connection!.execute(
       Sql.named(
-          'SELECT * FROM user_request_history WHERE userId = @id, account_id = @accountId'),
+          'SELECT * FROM user_request_history WHERE user_id = @user_id and account_id = @accountId'),
       parameters: {
-        'id': id,
+        'user_id': id,
         'accountId': accountId,
       },
     );
@@ -130,16 +137,19 @@ class FrogMysqlClient {
     Map data = {
       'history': history,
     };
+    print('history: $data');
     return data;
   }
 
-  Future<void> insertUserAccount(String userId, String string) async {
+  Future<void> insertUserAccount(
+      String userId, String string, String expireAt) async {
     await _connection!.execute(
       Sql.named(
-          'INSERT INTO user_strings (user_id, string_value) VALUES (@userId, @string)'),
+          'INSERT INTO user_strings (user_id, string_value, expire_at) VALUES (@userId, @string, @expire_at)'),
       parameters: {
         'userId': userId,
         'string': string,
+        'expire_at': expireAt,
       },
     );
   }
@@ -335,6 +345,28 @@ class FrogMysqlClient {
         'expireAt': expireAt,
       },
     );
+  }
+
+  Future<List<Map>> getExpiredTokens() async {
+    DateTime now = DateTime.now();
+    DateTime expire = now.add(const Duration(days: 2));
+    String expireAt = '${expire.year}-${expire.month}-${expire.day}';
+    final result = await _connection!.execute(
+      Sql.named('SELECT * FROM user_strings WHERE expire_at = @expireAt'),
+      parameters: {
+        'expireAt': expireAt,
+      },
+    );
+    List<Map> data = [];
+    for (ResultRow each in result.toList()) {
+      String id = each.toColumnMap()['id'].toString();
+      String string = each.toColumnMap()['string_value'].toString();
+      data.add({
+        'id': id,
+        'string': string,
+      });
+    }
+    return data;
   }
 
   Future<void> close() async {

@@ -11,7 +11,7 @@ Future<void> main() async {
 
 Future<HttpServer> run(Handler handler, InternetAddress ip, int port) {
   // print('load main');
-  print('version: 1.0.1');
+  print('version: 1.0.4 new build from github');
   StateManager();
   // 1. Execute any custom code prior to starting the server...
 

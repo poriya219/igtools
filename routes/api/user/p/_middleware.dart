@@ -15,6 +15,7 @@ Handler middleware(Handler handler) {
     }
     await mysqlClient.connect();
     Map user = await mysqlClient.getUserInfo(userId);
+    print('info: $user');
     bool hasPlan = bool.tryParse(user['has_plan'].toString()) ?? false;
     if (hasPlan) {
       try {

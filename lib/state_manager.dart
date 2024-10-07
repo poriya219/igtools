@@ -30,11 +30,14 @@ class StateManager {
           print('send request');
           http.Response response = await http.post(
               Uri.parse(
-                  'https://igtools-askr2yw-poriua219.globeapp.dev/globe/send'),
+                  'https://igtools-isldz7s-poriua219.globeapp.dev/globe/send'),
               headers: {
                 'Content-Type': 'application/json',
               },
               body: jsonEncode(IGRequest.toMap(each)));
+          print('send request status:');
+
+          print(response.statusCode);
           if (response.statusCode == 200) {
             deletedItems.add(each);
           }
@@ -46,6 +49,7 @@ class StateManager {
             'status': response.statusCode.toString(),
             'hex': each.hex,
           });
+          print('send request record created');
         }
         if (time.isBefore(now)) {
           deletedItems.add(each);
