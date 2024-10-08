@@ -13,7 +13,6 @@ Future<Response> onRequest(RequestContext context) async {
   if (context.request.method == HttpMethod.post) {
     String userId = context.read<String>().toString();
     String d = context.read();
-    await mysqlClient.connect();
     final st = await context.request.body();
     final body = jsonDecode(st);
     int index = int.tryParse(body['index'].toString()) ?? 0;

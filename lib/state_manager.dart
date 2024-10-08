@@ -44,7 +44,6 @@ class StateManager {
           String query =
               'UPDATE user_request_history SET status = @status WHERE hex = @hex';
           final mysqlClient = FrogMysqlClient();
-          await mysqlClient.connect();
           await mysqlClient.updateData(query: query, data: {
             'status': response.statusCode.toString(),
             'hex': each.hex,

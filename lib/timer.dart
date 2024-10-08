@@ -19,7 +19,6 @@ class DailyTimer {
       DateTime now = DateTime.now();
       if (now.hour == 0 && now.minute == 0) {
         final mysqlClient = FrogMysqlClient();
-        await mysqlClient.connect();
         await mysqlClient.resetPlans();
         List<Map> expiredTokens = await mysqlClient.getExpiredTokens();
         List<Future> requests = [];

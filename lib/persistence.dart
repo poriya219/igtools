@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:igtools/network.dart';
 import 'package:postgres/postgres.dart';
 
@@ -35,42 +36,56 @@ class FrogMysqlClient {
         ));
   }
 
-  Future<bool> userExists(String email) async {
+  Future<int?> userExists(String email) async {
+    await connect();
     final result = await _connection!.execute(
       Sql.named("SELECT * FROM users WHERE email=@email"),
       parameters: {'email': email},
     );
-    return result.length == 1; // If one user was found
+    await _connection!.close();
+    if (result.isNotEmpty) {
+      int? id = int.tryParse(result.first.toColumnMap()['id'].toString());
+      return id;
+    } else {
+      return null;
+    }
   }
 
   Future<bool> updateData(
       {required String query, required Map<String, dynamic> data}) async {
+    await connect();
     final result = await _connection!.execute(
       Sql.named(query),
       parameters: data,
     );
+    await _connection!.close();
     return true;
   }
 
   Future<int> getUserID(String email) async {
+    await connect();
     final result = await _connection!.execute(
       Sql.named("select id,email from users where email like @email;"),
       parameters: {'email': email},
     );
+    await _connection!.close();
     return int.tryParse(result.first[0].toString()) ??
         0; // If one user was found
   }
 
   Future<bool> checkLogin(String email, String passwordHash) async {
+    await connect();
     final result = await _connection!.execute(
       Sql.named(
           "SELECT * FROM users WHERE email = @email and password = @password"),
       parameters: {'email': email, 'password': passwordHash},
     );
+    await _connection!.close();
     return result.length == 1; // If one user was found
   }
 
   Future<void> insertUser(String email, String passwordHash) async {
+    await connect();
     await _connection!.execute(
       Sql.named(
           'INSERT INTO users (email, password, has_plan) VALUES (@email, @password, @has_plan)'),
@@ -80,9 +95,11 @@ class FrogMysqlClient {
         'has_plan': false,
       },
     );
+    await _connection!.close();
   }
 
   Future<Map> getUserInfo(String id) async {
+    await connect();
     final result = await _connection!.execute(
       Sql.named('SELECT * FROM users WHERE id = @id'),
       parameters: {
@@ -110,10 +127,12 @@ class FrogMysqlClient {
       'userId': userId,
       'accounts': accountsList,
     };
+    await _connection!.close();
     return data;
   }
 
   Future<Map> getUserHistory(int id, String accountId) async {
+    await connect();
     print('id: $id');
     print('accountId: $accountId');
     final result = await _connection!.execute(
@@ -138,11 +157,13 @@ class FrogMysqlClient {
       'history': history,
     };
     print('history: $data');
+    await _connection!.close();
     return data;
   }
 
   Future<void> insertUserAccount(
       String userId, String string, String expireAt) async {
+    await connect();
     await _connection!.execute(
       Sql.named(
           'INSERT INTO user_strings (user_id, string_value, expire_at) VALUES (@userId, @string, @expire_at)'),
@@ -152,9 +173,11 @@ class FrogMysqlClient {
         'expire_at': expireAt,
       },
     );
+    await _connection!.close();
   }
 
   Future<List> getUserAccounts(String id) async {
+    await connect();
     final listResult = await _connection!.execute(
       Sql.named('SELECT * FROM user_strings WHERE user_id = @id'),
       parameters: {
@@ -180,10 +203,12 @@ class FrogMysqlClient {
       Map map = jsonDecode(each.toString()) as Map;
       userAccounts.add(map);
     }
+    await _connection!.close();
     return userAccounts;
   }
 
   Future<Map> getIGAccountInfo(String id, int index) async {
+    await connect();
     final listResult = await _connection!.execute(
       Sql.named('SELECT * FROM user_strings WHERE user_id = @id'),
       parameters: {
@@ -198,6 +223,7 @@ class FrogMysqlClient {
     }
     String value = accountsList[index];
     List<String> temp = value.split('#poqi#');
+    await _connection!.close();
     return {
       'token': temp[0].toString(),
       'id': temp[1].toString(),
@@ -205,6 +231,7 @@ class FrogMysqlClient {
   }
 
   Future<Map> getUserPlan(String id) async {
+    await connect();
     final result = await _connection!.execute(
       Sql.named('SELECT * FROM users WHERE id = @id'),
       parameters: {
@@ -215,6 +242,7 @@ class FrogMysqlClient {
         bool.tryParse(result.first.toColumnMap()['has_plan'].toString()) ??
             false;
     String expireAt = result.first.toColumnMap()['expire_at'].toString();
+    await _connection!.close();
     return {
       'has_plan': hasPlan,
       'expire_at': expireAt,
@@ -227,6 +255,7 @@ class FrogMysqlClient {
       required String orderId,
       String? planId,
       required String trackId}) async {
+    await connect();
     await _connection!.execute(
       Sql.named(
           'INSERT INTO user_purchase_history (user_id, purchase_date, amount, track_Id, status, order_Id, plan_id) VALUES (@user_id, @purchase_date, @amount, @trackId, @status, @orderId, @plan_id)'),
@@ -240,9 +269,11 @@ class FrogMysqlClient {
         'plan_id': planId,
       },
     );
+    await _connection!.close();
   }
 
   Future<Map> getPlanInfo(String id) async {
+    await connect();
     final result = await _connection!.execute(
       Sql.named('SELECT * FROM plans WHERE id = @id'),
       parameters: {
@@ -259,6 +290,7 @@ class FrogMysqlClient {
       'duration': int.tryParse(duration) ?? 0,
       'price': price,
     };
+    await _connection!.close();
     return data;
   }
 
@@ -267,6 +299,7 @@ class FrogMysqlClient {
       required String description,
       required String price,
       required String duration}) async {
+    await connect();
     await _connection!.execute(
       Sql.named(
           'INSERT INTO plans (name, description, price, duration) VALUES (@name, @description, @price, @duration)'),
@@ -277,9 +310,11 @@ class FrogMysqlClient {
         'duration': int.tryParse(duration) ?? 0,
       },
     );
+    await _connection!.close();
   }
 
   Future<Map> getPaymentInfo(String orderId) async {
+    await connect();
     final result = await _connection!.execute(
       Sql.named(
           'SELECT * FROM user_purchase_history WHERE order_id = @order_id'),
@@ -308,11 +343,13 @@ class FrogMysqlClient {
       'id': id,
       'plan_id': plan_id,
     };
+    await _connection!.close();
     return data;
   }
 
   Future<void> setUserPlan(
       {required String planId, required String userId}) async {
+    await connect();
     final result = await _connection!.execute(
       Sql.named('SELECT * FROM plans WHERE id = @id'),
       parameters: {
@@ -330,9 +367,11 @@ class FrogMysqlClient {
       'expire_at': expireAt,
       'id': userId,
     });
+    await _connection!.close();
   }
 
   Future<void> resetPlans() async {
+    await connect();
     DateTime now = DateTime.now();
     DateTime expire = now.subtract(const Duration(days: 1));
     String expireAt = '${expire.year}-${expire.month}-${expire.day}';
@@ -345,9 +384,11 @@ class FrogMysqlClient {
         'expireAt': expireAt,
       },
     );
+    await _connection!.close();
   }
 
   Future<List<Map>> getExpiredTokens() async {
+    await connect();
     DateTime now = DateTime.now();
     DateTime expire = now.add(const Duration(days: 2));
     String expireAt = '${expire.year}-${expire.month}-${expire.day}';
@@ -366,7 +407,71 @@ class FrogMysqlClient {
         'string': string,
       });
     }
+    await _connection!.close();
     return data;
+  }
+
+  Future<void> savePasswordResetToken(int userId, String token) async {
+    await connect();
+    final expiration =
+        DateTime.now().add(Duration(hours: 1)); // Token valid for 1 hour
+    await _connection!.execute(
+      Sql.named(
+          'INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (@id, @token, @expires)'),
+      parameters: {
+        'id': userId,
+        'token': token,
+        'expires': expiration.toIso8601String(),
+      },
+    );
+    await _connection!.close();
+  }
+
+  Future<Map?> findResetToken(String token) async {
+    await connect();
+    final result = await _connection!.execute(
+      Sql.named('SELECT * FROM password_reset_tokens WHERE token = @token'),
+      parameters: {'token': token},
+    );
+
+    if (result.isNotEmpty) {
+      String expiresAt = result.first.toColumnMap()['expires_at'].toString();
+      int userId = int.parse(result.first.toColumnMap()['user_id'].toString());
+      await _connection!.close();
+      return {
+        'expires_at': expiresAt,
+        'user_id': userId,
+      };
+    }
+
+    await _connection!.close();
+    return null;
+  }
+
+  Future<void> updateUserPassword(int userId, String password) async {
+    final bytes = utf8.encode(password); // convert to utf8
+    final digest = sha256.convert(bytes);
+    final hashedPassword = digest.toString(); // store the hash
+    await connect();
+    final result = await _connection!.execute(
+      Sql.named('UPDATE users SET password = @password WHERE id = @id'),
+      parameters: {
+        'password': hashedPassword,
+        'id': userId,
+      },
+    );
+    await _connection!.close();
+  }
+
+  Future<void> invalidateResetToken(String token) async {
+    await connect();
+    final result = await _connection!.execute(
+      Sql.named('DELETE FROM password_reset_tokens WHERE token = @token'),
+      parameters: {
+        'token': token,
+      },
+    );
+    await _connection!.close();
   }
 
   Future<void> close() async {

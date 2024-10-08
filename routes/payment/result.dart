@@ -15,7 +15,6 @@ Future<Response> onRequest(RequestContext context) async {
   String query =
       'UPDATE user_purchase_history SET status = @status WHERE order_id = @order_id';
   final mysqlClient = FrogMysqlClient();
-  await mysqlClient.connect();
   await mysqlClient.updateData(query: query, data: {
     'status': status,
     'order_id': orderId,

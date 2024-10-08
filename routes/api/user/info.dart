@@ -13,7 +13,6 @@ FutureOr<Response> onRequest(RequestContext context) async {
     );
   }
   try {
-    await mysqlClient.connect();
     Map data = await mysqlClient.getUserInfo(userId);
     return Response.json(statusCode: 200, body: data);
   } catch (e) {

@@ -36,7 +36,6 @@ Future<Response> onRequest(RequestContext context) async {
     int expireAt = int.parse(sJson['expires_in'].toString());
     DateTime ex = DateTime.now().add(Duration(seconds: expireAt));
     String expire = '${ex.year}-${ex.month}-${ex.day}';
-    await mysqlClient.connect();
     await mysqlClient.insertUserAccount(userId, '$finalToken#poqi#$id', expire);
     return Response.json(
       statusCode: HttpStatus.created,

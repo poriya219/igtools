@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
 
 class Network {
   Future getAccountDetail(String token) async {
@@ -69,5 +71,27 @@ class Network {
     print(response.body);
     final json = jsonDecode(response.body);
     return json;
+  }
+
+  Future<void> sendPasswordResetEmail(String email, String resetLink) async {
+    final smtpServer = SmtpServer(
+      'smtp.c1.liara.email',
+      port: 587,
+      username: 'upbeat_neumann_4cvtql',
+      password: 'a655aa09-0eeb-4ea4-b692-9f5d7865c94e',
+    ); // Configure your SMTP server settings here
+
+    final message = Message()
+      ..from = Address('support@igtoolspanel.ir', 'IGTools')
+      ..recipients.add(email)
+      ..subject = 'Password Reset Request'
+      ..text = 'Click this link to reset your password: \n $resetLink';
+
+    try {
+      final sendReport = await send(message, smtpServer);
+      print('Message sent: ' + sendReport.toString());
+    } catch (e) {
+      print('Message not sent. Error: $e');
+    }
   }
 }

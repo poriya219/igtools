@@ -36,13 +36,11 @@ Future<Response> onRequest(RequestContext context) async {
     );
   }
 
-  await mysqlClient.connect();
-
   // Check if user already exists
-  final userExists = await mysqlClient.userExists(email);
+  int? userExists = await mysqlClient.userExists(email);
   print('userExists: $userExists');
 
-  if (userExists) {
+  if (userExists != null) {
     await mysqlClient.close(); // Close connection
     return Response.json(
       body: {'error': 'Username or email already exists.'},

@@ -16,7 +16,6 @@ Future<Response> onRequest(RequestContext context) async {
   final st = await context.request.body();
   final body = jsonDecode(st);
   final id = body['id'].toString();
-  await mysqlClient.connect();
   Map plan = await mysqlClient.getPlanInfo(id);
   String amount = plan['price'].toString();
   final data = await network.createPayment(amount: amount, hex: hex);
@@ -30,7 +29,6 @@ Future<Response> onRequest(RequestContext context) async {
   print(status);
 
   if (status == 100) {
-    await mysqlClient.connect();
     await mysqlClient.addPayment(
         user_id: userId,
         amount: amount,

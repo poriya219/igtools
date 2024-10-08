@@ -13,7 +13,6 @@ Future<Response> onRequest(RequestContext context) async {
     final userId = params['userId'] ?? '';
 
     if (uid.isNotEmpty) {
-      await mysqlClient.connect();
       Map data = await mysqlClient.getUserHistory(
         int.tryParse(uid) ?? 0,
         userId,

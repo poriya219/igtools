@@ -42,7 +42,6 @@ FutureOr<Response> onRequest(RequestContext context) async {
         }
         d['id'] = userId;
         String query = 'UPDATE users SET $q WHERE id = @id';
-        await mysqlClient.connect();
         await mysqlClient.updateData(query: query, data: d);
         return Response.json(statusCode: 200, body: 'Changed successfully');
       }

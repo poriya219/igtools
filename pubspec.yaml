@@ -16,12 +16,13 @@ dependencies:
   postgres: ^3.4.0
   http: ^1.2.2
   minio: ^3.5.2
+  mailer: ^6.2.0
+  uuid: ^4.5.0
 
 dev_dependencies:
   mocktail: ^1.0.3
   test: ^1.25.5
   very_good_analysis: ^5.1.0
   hive: ^2.2.3
-  uuid: ^4.5.0
   envied_generator: ^0.5.4+1
   build_runner: ^2.4.12

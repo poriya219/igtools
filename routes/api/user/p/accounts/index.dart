@@ -11,7 +11,6 @@ Future<Response> onRequest(RequestContext context) async {
     );
   }
   String userId = context.read<String>().toString();
-  await mysqlClient.connect();
   List data = await mysqlClient.getUserAccounts(userId);
   return Response.json(
     statusCode: 200,

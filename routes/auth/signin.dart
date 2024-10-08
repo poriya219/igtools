@@ -37,12 +37,10 @@ FutureOr<Response> onRequest(RequestContext context) async {
     );
   }
 
-  await mysqlClient.connect();
-
   // Check if user already exists
-  final userExists = await mysqlClient.userExists(email);
+  int? userExists = await mysqlClient.userExists(email);
 
-  if (userExists) {
+  if (userExists != null) {
     final passwordHash = hashPassword(password);
     final bool login = await mysqlClient.checkLogin(email, passwordHash);
     if (login) {
