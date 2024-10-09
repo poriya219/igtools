@@ -10,12 +10,12 @@ Future<Response> onRequest(RequestContext context) async {
     String uid = context.read<String>().toString();
     final request = context.request;
     final params = request.uri.queryParameters;
-    final userId = params['userId'] ?? '';
+    final index = params['index'] ?? '';
 
-    if (uid.isNotEmpty) {
+    if (uid.isNotEmpty && index.isNotEmpty) {
       Map data = await mysqlClient.getUserHistory(
         int.tryParse(uid) ?? 0,
-        userId,
+        int.tryParse(index) ?? 0,
       );
 
       return Response.json(
@@ -24,7 +24,7 @@ Future<Response> onRequest(RequestContext context) async {
       );
     } else {
       return Response.json(
-          statusCode: HttpStatus.badRequest, body: 'uid is required!');
+          statusCode: HttpStatus.badRequest, body: 'index & uid is required!');
     }
   }
 

@@ -18,6 +18,8 @@ dependencies:
   minio: ^3.5.2
   mailer: ^6.2.0
   uuid: ^4.5.0
+  image_compression: ^1.0.5
+  
 
 dev_dependencies:
   mocktail: ^1.0.3

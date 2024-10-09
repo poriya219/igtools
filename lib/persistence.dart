@@ -131,10 +131,21 @@ class FrogMysqlClient {
     return data;
   }
 
-  Future<Map> getUserHistory(int id, String accountId) async {
+  Future<Map> getUserHistory(int id, int index) async {
     await connect();
-    print('id: $id');
-    print('accountId: $accountId');
+    final listResult = await _connection!.execute(
+      Sql.named('SELECT * FROM user_strings WHERE user_id = @id'),
+      parameters: {
+        'id': id,
+      },
+    );
+    final accounts = listResult.toList();
+    List<String> accountsList = [];
+    for (ResultRow each in accounts) {
+      String e = each.toColumnMap()['string_value'].toString();
+      accountsList.add(e);
+    }
+    String accountId = accountsList[index].split('#poqi#').last;
     final result = await _connection!.execute(
       Sql.named(
           'SELECT * FROM user_request_history WHERE user_id = @user_id and account_id = @accountId'),

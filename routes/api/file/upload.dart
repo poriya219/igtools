@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dart_frog/dart_frog.dart';
+import 'package:image_compression/image_compression.dart';
 import 'package:minio/minio.dart';
 import 'package:uuid/uuid.dart';
 
@@ -21,11 +22,18 @@ Future<Response> onRequest(RequestContext context) async {
       body: "'file' is required",
     );
   }
+  bool compress = bool.tryParse(json.fields['compress'].toString()) ?? false;
+  bool isProfile = bool.tryParse(json.fields['is_profile'].toString()) ?? false;
   UploadedFile? uploadedFile = json.files['file'] as UploadedFile;
   String name = uploadedFile.name;
   String fileType = name.split('.').last;
   List<int> bytes = await uploadedFile.readAsBytes();
   Uint8List bodyBytes = Uint8List.fromList(bytes);
+  print('compress: $compress');
+  if (compress == true) {
+    print('compressing');
+    bodyBytes = await compressImage(file: bodyBytes);
+  }
 
   // Here you might want to extract the filename and content type
   var uuid = Uuid();
@@ -42,7 +50,9 @@ Future<Response> onRequest(RequestContext context) async {
   try {
     String result = await minio.putObject(
       'igtools',
-      'uploads/$fileName.$fileType',
+      isProfile
+          ? 'profiles/$fileName.$fileType'
+          : 'uploads/$fileName.$fileType',
       Stream<Uint8List>.value(bodyBytes),
       onProgress: (bytes) => print('$bytes uploaded'),
     );
@@ -57,5 +67,20 @@ Future<Response> onRequest(RequestContext context) async {
     return Response.json(
         body: {'message': 'Error: $e'},
         statusCode: HttpStatus.internalServerError);
+  }
+}
+
+Future<Uint8List> compressImage({required Uint8List file}) async {
+  try {
+    final input = ImageFile(
+      rawBytes: file,
+      filePath: '/',
+    );
+    final output = await compressInQueue(ImageFileConfiguration(input: input));
+    print('output size: ${output.sizeInBytes}');
+    return output.rawBytes;
+  } catch (e) {
+    print('error in compress: $e');
+    return Uint8List(0);
   }
 }
