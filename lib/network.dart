@@ -5,10 +5,10 @@ import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
 class Network {
+  String globeBase = 'https://igtools-iqiy427-poriua219.globeapp.dev';
   Future getAccountDetail(String token) async {
     http.Response response = await http.get(
-      Uri.parse(
-          'https://igtools-isldz7s-poriua219.globeapp.dev/globe/user/info?token=$token'),
+      Uri.parse('$globeBase/globe/user/info?token=$token'),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -22,15 +22,14 @@ class Network {
   }
 
   Future refreshToken(String token) async {
-    http.Response response = await http.post(
-        Uri.parse(
-            'https://igtools-isldz7s-poriua219.globeapp.dev/globe/refresh'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'token': token,
-        }));
+    http.Response response =
+        await http.post(Uri.parse('$globeBase/globe/refresh'),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'token': token,
+            }));
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       return json;

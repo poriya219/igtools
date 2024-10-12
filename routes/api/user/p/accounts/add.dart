@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:http/http.dart' as http;
+import 'package:igtools/network.dart';
 
 import '../../../../../main.dart';
 
@@ -17,15 +18,15 @@ Future<Response> onRequest(RequestContext context) async {
   String code = (body['code'] ?? '').toString();
   print('code: $code');
   if (code.isNotEmpty && code.isNotEmpty) {
-    http.Response response = await http.post(
-        Uri.parse(
-            'https://igtools-isldz7s-poriua219.globeapp.dev/globe/change'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'code': code,
-        }));
+    Network network = Network();
+    http.Response response =
+        await http.post(Uri.parse('${network.globeBase}/globe/change'),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'code': code,
+            }));
     print(response.statusCode);
     print(response.body);
     final sJson = jsonDecode(response.body);

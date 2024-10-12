@@ -28,7 +28,7 @@ COPY --from=build /app/bin/server /app/bin/
 COPY --from=build /app/public ./public
 
 # Expose port 8080 to the outside world
-EXPOSE 8080
+# EXPOSE 8080
 
 # Start server.
 CMD ["/app/bin/server"]

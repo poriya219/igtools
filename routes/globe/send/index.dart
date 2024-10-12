@@ -18,6 +18,7 @@ Future<Response> onRequest(RequestContext context) async {
       uid: body['uid'].toString(),
       hex: body['hex'].toString(),
       type: body['type'].toString(),
+      ut: body['ut'].toString(),
       data: body['data'] != null ? body['data'] as Map : {},
     );
     String caption =
@@ -38,8 +39,8 @@ Future<Response> onRequest(RequestContext context) async {
         break;
       case 'CarouselPost':
         finalUrl = [
-          'https://graph.instagram.com/v20.0/${item.userID}/media?media_type=STORIES&access_token=${item.token}',
-          'https://graph.instagram.com/v20.0/${item.userID}/media_publish?media_type=STORIES&access_token=${item.token}',
+          'https://graph.instagram.com/v20.0/${item.userID}/media?access_token=${item.token}',
+          'https://graph.instagram.com/v20.0/${item.userID}/media_publish?access_token=${item.token}',
         ];
         break;
       case 'Reels':
@@ -53,9 +54,46 @@ Future<Response> onRequest(RequestContext context) async {
         break;
     }
 
+    String children = '';
+    final urls = item.data!['urls'];
+    List cSlidesUrls = [];
+    if (item.type == 'CarouselPost') {
+      if (urls != null) {
+        List slides = urls as List;
+        cSlidesUrls = slides;
+        for (var each in slides) {
+          http.Response response = await http.post(
+            Uri.parse(finalUrl[0]),
+            body: {'image_url': each.toString(), 'is_carousel_item': 'true'},
+          );
+          if (response.statusCode == 200) {
+            final r = jsonDecode(response.body);
+            String id = r['id'].toString();
+            if (children.isEmpty) {
+              children = id;
+            } else {
+              children = children + ',$id';
+            }
+          }
+        }
+      }
+    }
+
     print('send request');
+    Map t = {
+      'children': children,
+      'media_type': 'CAROUSEL',
+      'caption': caption
+    };
+    print('carousel body: $t');
     http.Response response = await http.post(Uri.parse(finalUrl[0]),
-        body: {'image_url': item.url, 'caption': caption});
+        body: item.type != 'CarouselPost'
+            ? {'image_url': item.url, 'caption': caption}
+            : {
+                'children': children,
+                'media_type': 'CAROUSEL',
+                'caption': caption
+              });
     if (response.statusCode == 200) {
       final r = jsonDecode(response.body);
       String id = r['id'].toString();
@@ -70,6 +108,21 @@ Future<Response> onRequest(RequestContext context) async {
         );
       }
     }
+
+    http.delete(
+      Uri.parse('https://igtoolspanel.ir/api/user/file'),
+      headers: {
+        'Authorization': 'OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw',
+        'User': item.ut,
+      },
+      body: item.type != 'CarouselPost'
+          ? {
+              'urls': cSlidesUrls,
+            }
+          : {
+              'urls': [item.url],
+            },
+    );
 
     return Response(
       statusCode: response.statusCode,

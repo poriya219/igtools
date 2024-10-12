@@ -12,6 +12,7 @@ Future<Response> onRequest(RequestContext context) async {
   if (context.request.method != HttpMethod.post) {
     return Response(statusCode: HttpStatus.methodNotAllowed);
   }
+  String uid = context.read<String>().toString();
 
   // Read the request body as bytes
   bool isJson = context.request.headers['Content-Type'] == 'application/json';
@@ -52,15 +53,18 @@ Future<Response> onRequest(RequestContext context) async {
       'igtools',
       isProfile
           ? 'profiles/$fileName.$fileType'
-          : 'uploads/$fileName.$fileType',
+          : 'uploads/$uid/$fileName.$fileType',
       Stream<Uint8List>.value(bodyBytes),
       onProgress: (bytes) => print('$bytes uploaded'),
     );
 
+    String fileUrl = isProfile
+        ? 'https://storage.c2.liara.space/igtools/profiles/$fileName.$fileType'
+        : 'https://storage.c2.liara.space/igtools/uploads/$uid/$fileName.$fileType';
+
     return Response.json(body: {
       'message': 'File uploaded successfully!',
-      'url':
-          'https://storage.c2.liara.space/igtools/uploads/$fileName.$fileType'
+      'url': fileUrl,
     }, statusCode: 201);
   } catch (e) {
     print(e);

@@ -9,16 +9,19 @@ class IGRequest {
   final String hex;
   final String type;
   final Map? data;
+  final String ut;
 
-  IGRequest(
-      {required this.token,
-      required this.url,
-      required this.time,
-      required this.uid,
-      required this.hex,
-      required this.type,
-      this.data,
-      required this.userID});
+  IGRequest({
+    required this.token,
+    required this.url,
+    required this.time,
+    required this.uid,
+    required this.hex,
+    required this.type,
+    this.data,
+    required this.userID,
+    required this.ut,
+  });
 
   @override
   String toString() {
@@ -31,6 +34,7 @@ class IGRequest {
       'hex': hex,
       'type': type,
       'data': data,
+      'ut': ut,
     };
     String json = jsonEncode(map);
     return json;
@@ -46,6 +50,7 @@ class IGRequest {
         hex: map['hex'].toString(),
         type: map['type'].toString(),
         data: map['data'] != null ? map['data'] as Map : {},
+        ut: map['ut'].toString(),
         userID: map['userID'].toString());
   }
 
@@ -59,6 +64,7 @@ class IGRequest {
       'hex': data.hex,
       'type': data.type,
       'data': data.data,
+      'ut': data.ut,
     };
   }
 }

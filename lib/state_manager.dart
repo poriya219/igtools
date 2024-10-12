@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:igtools/models/ig_request.dart';
+import 'package:igtools/network.dart';
 import 'package:igtools/persistence.dart';
 
 class StateManager {
@@ -28,16 +29,17 @@ class StateManager {
         DateTime now = DateTime.now();
         if (time.difference(now).inMinutes == 0) {
           print('send request');
-          http.Response response = await http.post(
-              Uri.parse(
-                  'https://igtools-isldz7s-poriua219.globeapp.dev/globe/send'),
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: jsonEncode(IGRequest.toMap(each)));
+          Network network = Network();
+          http.Response response =
+              await http.post(Uri.parse('${network.globeBase}/globe/send'),
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: jsonEncode(IGRequest.toMap(each)));
           print('send request status:');
 
           print(response.statusCode);
+          print(response.body);
           if (response.statusCode == 200) {
             deletedItems.add(each);
           }

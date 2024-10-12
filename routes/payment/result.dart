@@ -80,7 +80,7 @@ Future<Response> onRequest(RequestContext context) async {
     <h1>$sMessage</h1>
     <p>$tMessage</p>
     <p>$oMessage</p>
-    <a href="https://igtoolspanel.ir/payment/callback/" class="mybutton">بازگشت به برنامه</a>
+    <a href="https://igtoolspanel.ir/" class="mybutton">بازگشت به برنامه</a>
   </body>
   </html>
   ''';

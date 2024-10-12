@@ -8,6 +8,9 @@ import 'package:uuid/uuid.dart';
 import '../../../../main.dart';
 
 Future<Response> onRequest(RequestContext context) async {
+  if (context.request.method != HttpMethod.post) {
+    return Response.json(statusCode: HttpStatus.methodNotAllowed);
+  }
   String userId = context.read();
   var uuid = Uuid();
   String uuidString = uuid.v1().toString();
@@ -36,11 +39,12 @@ Future<Response> onRequest(RequestContext context) async {
         planId: id,
         trackId: trackId.toString());
     return Response(
-      statusCode: HttpStatus.permanentRedirect,
-      headers: {
-        HttpHeaders.locationHeader:
-            'https://gateway.zibal.ir/start/${trackId.toString()}',
-      },
+      statusCode: HttpStatus.ok,
+      body: jsonEncode(
+        {
+          'url': 'https://gateway.zibal.ir/start/${trackId.toString()}',
+        },
+      ),
     );
   }
   return Response.json(

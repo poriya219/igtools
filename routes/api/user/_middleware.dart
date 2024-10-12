@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:igtools/env/env.dart';
+
+import '../../../main.dart';
 
 Handler middleware(Handler handler) {
   return (context) async {
-    final String jwtSecret = Env.secret;
     final secretHeader = context.request.headers['Authorization'];
     if (secretHeader == null || secretHeader != jwtSecret) {
       return Response.json(

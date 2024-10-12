@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:igtools/env/env.dart';
 
 import '../../main.dart';
 
@@ -17,7 +16,6 @@ FutureOr<Response> onRequest(RequestContext context) async {
   }
   final header = context.request.headers;
   String secret = header['Authorization'] ?? '';
-  final String jwtSecret = Env.secret;
   if (secret.isEmpty || secret != jwtSecret) {
     return Response.json(
       body: 'Authorization is required',

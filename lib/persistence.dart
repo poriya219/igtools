@@ -18,18 +18,17 @@ class FrogMysqlClient {
 
   /// initialises a connection to database
   Future<void> connect() async {
-    print('connect database');
     _connection = await Connection.open(
         Endpoint(
-          // host: "igtools-db",
-          host: "127.0.0.1",
+          host: "igtools-db",
+          // host: "127.0.0.1",
           port: 5432,
-          username: 'postgres',
-          // username: 'root',
-          // password: "Bqr7kKtN2GbgAajCFfU1J2Jk",
-          password: "Po219219",
-          database: 'user_management',
-          // database: 'igtools',
+          // username: 'postgres',
+          username: 'root',
+          password: "Bqr7kKtN2GbgAajCFfU1J2Jk",
+          // password: "Po219219",
+          // database: 'user_management',
+          database: 'igtools',
         ),
         settings: ConnectionSettings(
           sslMode: SslMode.disable,
@@ -131,6 +130,30 @@ class FrogMysqlClient {
     return data;
   }
 
+  Future<List> getPaymentPlans() async {
+    await connect();
+    final result = await _connection!.execute(
+      Sql.named('SELECT * FROM plans'),
+    );
+    List data = [];
+    for (ResultRow each in result) {
+      int id = int.parse(each.toColumnMap()['id'].toString());
+      int duration = int.parse(each.toColumnMap()['duration'].toString());
+      String name = each.toColumnMap()['name'].toString();
+      String description = each.toColumnMap()['description'].toString();
+      String price = each.toColumnMap()['price'].toString();
+      data.add({
+        'id': id,
+        'name': name,
+        'description': description,
+        'price': price,
+        'duration': duration,
+      });
+    }
+    await _connection!.close();
+    return data;
+  }
+
   Future<Map> getUserHistory(int id, int index) async {
     await connect();
     final listResult = await _connection!.execute(
@@ -162,7 +185,7 @@ class FrogMysqlClient {
       e['date'] = each.toColumnMap()['request_date'].toString();
       e['type'] = each.toColumnMap()['request_type'].toString();
       e['status'] = each.toColumnMap()['status'].toString();
-      history.add(e);
+      history.insert(0, e);
     }
     Map data = {
       'history': history,
