@@ -29,7 +29,6 @@ Future<Response> onRequest(RequestContext context) async {
   // Example: Redirecting to a Stripe Checkout session URL
   final trackId = data['trackId'];
   final status = data['result'];
-  print(status);
 
   if (status == 100) {
     await mysqlClient.addPayment(
@@ -38,13 +37,12 @@ Future<Response> onRequest(RequestContext context) async {
         orderId: 'ZBL-$hex',
         planId: id,
         trackId: trackId.toString());
-    return Response(
+
+    return Response.json(
       statusCode: HttpStatus.ok,
-      body: jsonEncode(
-        {
-          'url': 'https://gateway.zibal.ir/start/${trackId.toString()}',
-        },
-      ),
+      body: {
+        'url': 'https://gateway.zibal.ir/start/${trackId.toString()}',
+      },
     );
   }
   return Response.json(

@@ -110,6 +110,8 @@ class FrogMysqlClient {
     String email = result.first.toColumnMap()['email'].toString();
     String image = result.first.toColumnMap()['image'].toString();
     String expireAt = result.first.toColumnMap()['expire_at'].toString();
+    int? planId =
+        int.tryParse(result.first.toColumnMap()['plan_id'].toString());
     bool has_plan =
         bool.tryParse(result.first.toColumnMap()['has_plan'].toString()) ??
             false;
@@ -125,6 +127,7 @@ class FrogMysqlClient {
       'expire_at': expireAt,
       'userId': userId,
       'accounts': accountsList,
+      'plan_id': planId,
     };
     await _connection!.close();
     return data;
@@ -276,10 +279,13 @@ class FrogMysqlClient {
         bool.tryParse(result.first.toColumnMap()['has_plan'].toString()) ??
             false;
     String expireAt = result.first.toColumnMap()['expire_at'].toString();
+    int? planId =
+        int.tryParse(result.first.toColumnMap()['plan_id'].toString());
     await _connection!.close();
     return {
       'has_plan': hasPlan,
       'expire_at': expireAt,
+      'plan_id': planId,
     };
   }
 
@@ -395,11 +401,12 @@ class FrogMysqlClient {
         DateTime.now().add(Duration(days: int.tryParse(duration) ?? 0));
     String expireAt = '${expire.year}-${expire.month}-${expire.day}';
     String query =
-        'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at WHERE id = @id';
+        'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at, plan_id = @plan_id WHERE id = @id';
     await updateData(query: query, data: {
       'has_plan': true,
       'expire_at': expireAt,
       'id': userId,
+      'plan_id': int.tryParse(planId)
     });
     await _connection!.close();
   }
@@ -411,11 +418,12 @@ class FrogMysqlClient {
     String expireAt = '${expire.year}-${expire.month}-${expire.day}';
     await _connection!.execute(
       Sql.named(
-          'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at WHERE expire_at = @expireAt'),
+          'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at, plan_id = @plan_id WHERE expire_at = @expireAt'),
       parameters: {
         'has_plan': false,
         'expire_at': null,
         'expireAt': expireAt,
+        'plan_id': null,
       },
     );
     await _connection!.close();
@@ -506,6 +514,42 @@ class FrogMysqlClient {
       },
     );
     await _connection!.close();
+  }
+
+  Future<List> getUserPayments(String userId) async {
+    await connect();
+    final result = await _connection!.execute(
+      Sql.named('SELECT * FROM user_purchase_history WHERE user_id = @user_id'),
+      parameters: {
+        'user_id': userId,
+      },
+    );
+    List data = [];
+    for (ResultRow each in result) {
+      String user_id = each.toColumnMap()['user_id'].toString();
+      String purchase_date = each.toColumnMap()['purchase_date'].toString();
+      String amount = each.toColumnMap()['amount'].toString();
+      String description = each.toColumnMap()['description'].toString();
+      String track_id = each.toColumnMap()['track_id'].toString();
+      String status = each.toColumnMap()['status'].toString();
+      String order_id = each.toColumnMap()['order_id'].toString();
+      String id = each.toColumnMap()['id'].toString();
+      String plan_id = each.toColumnMap()['plan_id'].toString();
+      Map record = {
+        'user_id': user_id,
+        'purchase_date': purchase_date,
+        'amount': amount,
+        'description': description,
+        'track_id': track_id,
+        'status': status,
+        'order_id': order_id,
+        'id': id,
+        'plan_id': plan_id,
+      };
+      data.insert(0, record);
+    }
+    await _connection!.close();
+    return data;
   }
 
   Future<void> close() async {

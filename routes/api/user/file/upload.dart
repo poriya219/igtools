@@ -17,6 +17,8 @@ Future<Response> onRequest(RequestContext context) async {
   // Read the request body as bytes
   bool isJson = context.request.headers['Content-Type'] == 'application/json';
   final json = await context.request.formData();
+  print('json: ${json.files}');
+
   if (json.files['file'] == null) {
     return Response.json(
       statusCode: HttpStatus.badRequest,

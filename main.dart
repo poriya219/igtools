@@ -13,7 +13,7 @@ Future<void> main() async {
 
 Future<HttpServer> run(Handler handler, InternetAddress ip, int port) {
   // print('load main');
-  print('version: 1.0.13');
+  print('version: 1.0.15');
 
   StateManager();
   DailyTimer();
