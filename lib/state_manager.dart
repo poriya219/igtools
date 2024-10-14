@@ -2,15 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:igtools/models/ig_request.dart';
 import 'package:igtools/network.dart';
 import 'package:igtools/persistence.dart';
+import 'package:postgres/postgres.dart';
 
 class StateManager {
   static final StateManager _instance = StateManager._internal();
   factory StateManager() => _instance;
 
-  List<IGRequest> items = [];
   Timer? timer;
 
   StateManager._internal() {
@@ -19,48 +18,48 @@ class StateManager {
 
   void startTimer() {
     timer = Timer.periodic(Duration(minutes: 1), (Timer t) async {
+      final mysqlClient = FrogMysqlClient();
+      Network network = Network();
+      List<int> ids = [];
+      List<int> statuses = [];
+      List<Future> requests = [];
       // This is the function that will be executed every 1 minutes.
       // For example, you could modify the items list periodically.
-      List<IGRequest> temp = List.from(items);
-      List<IGRequest> deletedItems = [];
-      for (IGRequest each in temp) {
-        String timeString = each.time;
-        DateTime time = DateTime.parse(timeString);
-        DateTime now = DateTime.now();
-        if (time.difference(now).inMinutes == 0) {
-          print('send request');
-          Network network = Network();
-          http.Response response =
-              await http.post(Uri.parse('${network.globeBase}/globe/send'),
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: jsonEncode(IGRequest.toMap(each)));
-          print('send request status:');
-
-          print(response.statusCode);
-          print(response.body);
-          if (response.statusCode == 200) {
-            deletedItems.add(each);
-          }
-          String query =
-              'UPDATE user_request_history SET status = @status WHERE hex = @hex';
-          final mysqlClient = FrogMysqlClient();
-          await mysqlClient.updateData(query: query, data: {
-            'status': response.statusCode.toString(),
-            'hex': each.hex,
-          });
-          print('send request record created');
-        }
-        if (time.isBefore(now)) {
-          deletedItems.add(each);
-        }
+      List<ResultRow> results = await mysqlClient.getRequests();
+      for (ResultRow each in results) {
+        int requestId = int.parse(each.toColumnMap()['id'].toString());
+        int igId = int.parse(each.toColumnMap()['ig_id'].toString());
+        String token = each.toColumnMap()['token'].toString();
+        String igToken = each.toColumnMap()['ig_token'].toString();
+        final urls = each.toColumnMap()['urls'];
+        String caption = each.toColumnMap()['caption'].toString();
+        String type = each.toColumnMap()['type'].toString();
+        String status = each.toColumnMap()['status'].toString();
+        ids.add(requestId);
+        requests.add(network.globeSend({
+          'ig_id': igId,
+          'ut': token,
+          'igt': igToken,
+          'urls': urls,
+          'caption': caption,
+          'type': type,
+        }));
       }
-      if (deletedItems.isNotEmpty) {
-        for (IGRequest i in deletedItems) {
-          items.remove(i);
-        }
-      }
+      List responses = await Future.wait(requests);
+      final query = """
+    UPDATE user_request_history
+    SET status = sub.status, urls = @urls, ig_token = @ig_token, token = @token
+    FROM (
+      SELECT  unnest(ARRAY[${ids.map((id) => id.toString()).join(',')}])::INTEGER AS id,
+       unnest(ARRAY[${responses.map((token) => "'$token'").join(',')}])::TEXT AS status
+    ) AS sub
+    WHERE user_request_history.id = sub.id;
+  """;
+      await mysqlClient.updateData(query: query, data: {
+        'urls': [],
+        'ig_token': '',
+        'token': '',
+      });
     });
   }
 }

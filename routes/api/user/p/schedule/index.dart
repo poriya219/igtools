@@ -3,50 +3,30 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
-import 'package:igtools/models/ig_request.dart';
-import 'package:igtools/state_manager.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../../../main.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   if (context.request.method == HttpMethod.post) {
     String userId = context.read<String>().toString();
-    String d = context.read();
     final st = await context.request.body();
     final body = jsonDecode(st);
     int index = int.tryParse(body['index'].toString()) ?? 0;
     Map igInfo = await mysqlClient.getIGAccountInfo(userId, index);
     String igToken = igInfo['token'].toString().split('bearer ').last;
-    var uuid = Uuid();
-    String uuidString = uuid.v1().toString();
-    String hex = uuidString.substring(0, 6).split('-').last;
-    final item = IGRequest(
-      token: igToken,
-      url: body['url'].toString(),
-      time: body['time'].toString(),
-      userID: igInfo['id'].toString(),
-      hex: hex,
-      uid: userId,
-      type: body['type'].toString(),
-      ut: context.request.headers['User'].toString(),
-      data: body['data'] != null ? body['data'] as Map : {},
-    );
-
-    StateManager().items.add(item);
-    String query =
-        'INSERT INTO user_request_history (user_id, request_date, request_type, status, hex, account_id) VALUES (@userId, NOW(), @requestType, @status, @hex, @account_id)';
-    await mysqlClient.updateData(query: query, data: {
-      'userId': int.tryParse(userId) ?? 0,
-      'requestType': item.type,
-      'status': '0',
-      'hex': item.hex,
-      'account_id': item.userID,
-    });
-    return Response(
+    await mysqlClient.addUserRequest(
+        userId: int.parse(userId),
+        scheduledTime: body['time'].toString(),
+        igId: int.parse(igInfo['id'].toString()),
+        token: context.request.headers['User'].toString(),
+        igToken: igToken,
+        urls: body['urls'],
+        caption: body['caption'].toString(),
+        type: body['type'].toString(),
+        status: 'pending');
+    return Response.json(
       statusCode: 201,
-      body: StateManager().items.toString(),
-      // body: 'Request was set!',
+      body: 'post scheduled successfully',
     );
   }
 

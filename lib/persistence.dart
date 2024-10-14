@@ -20,15 +20,15 @@ class FrogMysqlClient {
   Future<void> connect() async {
     _connection = await Connection.open(
         Endpoint(
-          host: "igtools-db",
-          // host: "127.0.0.1",
+          // host: "igtools-db",
+          host: "127.0.0.1",
           port: 5432,
-          // username: 'postgres',
-          username: 'root',
-          password: "Bqr7kKtN2GbgAajCFfU1J2Jk",
-          // password: "Po219219",
-          // database: 'user_management',
-          database: 'igtools',
+          username: 'postgres',
+          // username: 'root',
+          // password: "Bqr7kKtN2GbgAajCFfU1J2Jk",
+          password: "Po219219",
+          database: 'user_management',
+          // database: 'igtools',
         ),
         settings: ConnectionSettings(
           sslMode: SslMode.disable,
@@ -112,6 +112,11 @@ class FrogMysqlClient {
     String expireAt = result.first.toColumnMap()['expire_at'].toString();
     int? planId =
         int.tryParse(result.first.toColumnMap()['plan_id'].toString());
+    int maxAccount =
+        int.tryParse(result.first.toColumnMap()['max_account'].toString()) ?? 0;
+    int uploadLimit =
+        int.tryParse(result.first.toColumnMap()['upload_limit'].toString()) ??
+            0;
     bool has_plan =
         bool.tryParse(result.first.toColumnMap()['has_plan'].toString()) ??
             false;
@@ -128,6 +133,8 @@ class FrogMysqlClient {
       'userId': userId,
       'accounts': accountsList,
       'plan_id': planId,
+      'max_account': maxAccount,
+      'upload_limit': uploadLimit.toDouble(),
     };
     await _connection!.close();
     return data;
@@ -145,12 +152,18 @@ class FrogMysqlClient {
       String name = each.toColumnMap()['name'].toString();
       String description = each.toColumnMap()['description'].toString();
       String price = each.toColumnMap()['price'].toString();
+      int maxAccount =
+          int.tryParse(each.toColumnMap()['max_account'].toString()) ?? 0;
+      int uploadLimit =
+          int.tryParse(each.toColumnMap()['upload_limit'].toString()) ?? 0;
       data.add({
         'id': id,
         'name': name,
         'description': description,
         'price': price,
         'duration': duration,
+        'upload_limit': uploadLimit.toDouble(),
+        'max_account': maxAccount,
       });
     }
     await _connection!.close();
@@ -174,28 +187,72 @@ class FrogMysqlClient {
     String accountId = accountsList[index].split('#poqi#').last;
     final result = await _connection!.execute(
       Sql.named(
-          'SELECT * FROM user_request_history WHERE user_id = @user_id and account_id = @accountId'),
+          'SELECT * FROM user_request_history WHERE user_id = @user_id and ig_id = @ig_id'),
       parameters: {
         'user_id': id,
-        'accountId': accountId,
+        'ig_id': accountId,
       },
     );
     final historyList = result.toList();
     List history = [];
     for (ResultRow each in historyList) {
       Map e = {};
-      e['id'] = each.toColumnMap()['id'].toString();
-      e['date'] = each.toColumnMap()['request_date'].toString();
-      e['type'] = each.toColumnMap()['request_type'].toString();
+      e['id'] = int.parse(each.toColumnMap()['id'].toString());
+      e['user_id'] = int.parse(each.toColumnMap()['user_id'].toString());
+      e['request_date'] = each.toColumnMap()['request_date'].toString();
+      e['scheduled_time'] = each.toColumnMap()['scheduled_time'].toString();
+      e['ig_id'] = int.parse(each.toColumnMap()['ig_id'].toString());
+      e['token'] = each.toColumnMap()['token'].toString();
+      e['ig_token'] = each.toColumnMap()['ig_token'].toString();
+      e['urls'] = each.toColumnMap()['urls'];
+      e['caption'] = each.toColumnMap()['caption'].toString();
+      e['type'] = each.toColumnMap()['type'].toString();
       e['status'] = each.toColumnMap()['status'].toString();
       history.insert(0, e);
     }
     Map data = {
       'history': history,
     };
-    print('history: $data');
     await _connection!.close();
     return data;
+  }
+
+  Future<void> addUserRequest({
+    required int userId,
+    required String scheduledTime,
+    required int igId,
+    required String token,
+    required String igToken,
+    required final urls,
+    required String caption,
+    required String type,
+    required String status,
+  }) async {
+    await connect();
+    final result = await _connection!.execute(
+      Sql.named(
+          'INSERT INTO user_request_history (user_id, request_date, scheduled_time, ig_id, token, ig_token, urls, caption, type, status) VALUES (@userId, NOW(), @scheduled_time, @ig_id, @token, @ig_token, @urls, @caption, @type, @status)'),
+      parameters: {
+        'user_id': userId,
+        'scheduled_time': scheduledTime,
+        'ig_id': igId,
+        'token': token,
+        'ig_token': igToken,
+        'urls': urls,
+        'caption': caption,
+        'type': type,
+        'status': status,
+      },
+    );
+    await _connection!.close();
+  }
+
+  Future<List<ResultRow>> getRequests() async {
+    final result = await _connection!.execute(
+      Sql.named(
+          "SELECT * FROM user_request_history WHERE date_trunc('minute', scheduled_time) = date_trunc('minute', NOW())"),
+    );
+    return result.toList();
   }
 
   Future<void> insertUserAccount(
@@ -281,11 +338,18 @@ class FrogMysqlClient {
     String expireAt = result.first.toColumnMap()['expire_at'].toString();
     int? planId =
         int.tryParse(result.first.toColumnMap()['plan_id'].toString());
+    int maxAccount =
+        int.tryParse(result.first.toColumnMap()['max_account'].toString()) ?? 0;
+    int uploadLimit =
+        int.tryParse(result.first.toColumnMap()['upload_limit'].toString()) ??
+            0;
     await _connection!.close();
     return {
       'has_plan': hasPlan,
       'expire_at': expireAt,
       'plan_id': planId,
+      'max_account': maxAccount,
+      'upload_limit': uploadLimit,
     };
   }
 
@@ -324,11 +388,18 @@ class FrogMysqlClient {
     String description = result.first.toColumnMap()['description'].toString();
     String duration = result.first.toColumnMap()['duration'].toString();
     String price = result.first.toColumnMap()['price'].toString();
+    int maxAccount =
+        int.tryParse(result.first.toColumnMap()['max_account'].toString()) ?? 0;
+    int uploadLimit =
+        int.tryParse(result.first.toColumnMap()['upload_limit'].toString()) ??
+            0;
     Map data = {
       'name': name,
       'description': description,
       'duration': int.tryParse(duration) ?? 0,
       'price': price,
+      'max_account': maxAccount,
+      'upload_limit': uploadLimit,
     };
     await _connection!.close();
     return data;
@@ -338,15 +409,19 @@ class FrogMysqlClient {
       {required String name,
       required String description,
       required String price,
+      required int maxAccount,
+      required int uploadLimit,
       required String duration}) async {
     await connect();
     await _connection!.execute(
       Sql.named(
-          'INSERT INTO plans (name, description, price, duration) VALUES (@name, @description, @price, @duration)'),
+          'INSERT INTO plans (name, description, price, duration,max_account,upload_limit) VALUES (@name, @description, @price, @duration, @max_account,@upload_limit)'),
       parameters: {
         'name': name,
         'description': description,
         'price': price,
+        'max_account': maxAccount,
+        'upload_limit': uploadLimit,
         'duration': int.tryParse(duration) ?? 0,
       },
     );
@@ -397,16 +472,23 @@ class FrogMysqlClient {
       },
     );
     String duration = result.first.toColumnMap()['duration'].toString();
+    int maxAccount =
+        int.tryParse(result.first.toColumnMap()['max_account'].toString()) ?? 0;
+    int uploadLimit =
+        int.tryParse(result.first.toColumnMap()['upload_limit'].toString()) ??
+            0;
     DateTime expire =
         DateTime.now().add(Duration(days: int.tryParse(duration) ?? 0));
     String expireAt = '${expire.year}-${expire.month}-${expire.day}';
     String query =
-        'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at, plan_id = @plan_id WHERE id = @id';
+        'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at, plan_id = @plan_id, max_account = @max_account, upload_limit = @upload_limit WHERE id = @id';
     await updateData(query: query, data: {
       'has_plan': true,
       'expire_at': expireAt,
       'id': userId,
-      'plan_id': int.tryParse(planId)
+      'max_account': maxAccount,
+      'plan_id': int.tryParse(planId),
+      'upload_limit': uploadLimit,
     });
     await _connection!.close();
   }
@@ -418,12 +500,14 @@ class FrogMysqlClient {
     String expireAt = '${expire.year}-${expire.month}-${expire.day}';
     await _connection!.execute(
       Sql.named(
-          'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at, plan_id = @plan_id WHERE expire_at = @expireAt'),
+          'UPDATE users SET has_plan = @has_plan, expire_at = @expire_at, plan_id = @plan_id, max_account = @max_account, upload_limit = @upload_limit WHERE expire_at = @expireAt'),
       parameters: {
         'has_plan': false,
         'expire_at': null,
         'expireAt': expireAt,
         'plan_id': null,
+        'max_account': 0,
+        'upload_limit': 0,
       },
     );
     await _connection!.close();

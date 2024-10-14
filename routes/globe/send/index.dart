@@ -4,49 +4,43 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:http/http.dart' as http;
-import 'package:igtools/models/ig_request.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   if (context.request.method == HttpMethod.post) {
     final st = await context.request.body();
     final body = jsonDecode(st);
-    final item = IGRequest(
-      token: body['token'].toString(),
-      url: body['url'].toString(),
-      time: body['time'].toString(),
-      userID: body['id'].toString(),
-      uid: body['uid'].toString(),
-      hex: body['hex'].toString(),
-      type: body['type'].toString(),
-      ut: body['ut'].toString(),
-      data: body['data'] != null ? body['data'] as Map : {},
-    );
-    String caption =
-        item.data?['caption'] != null ? item.data!['caption'].toString() : '';
+
+    String caption = body['caption'].toString();
+    String type = body['type'].toString();
+    String userID = body['ig_id'].toString();
+    String igt = body['igt'].toString();
+    final urls = body['urls'];
+    String ut = body['ut'].toString();
+
     List<String> finalUrl = ['', ''];
-    switch (item.type) {
+    switch (type) {
       case 'Story':
         finalUrl = [
-          'https://graph.instagram.com/v20.0/${item.userID}/media?media_type=STORIES&access_token=${item.token}',
-          'https://graph.instagram.com/v20.0/${item.userID}/media_publish?media_type=STORIES&access_token=${item.token}',
+          'https://graph.instagram.com/v20.0/$userID/media?media_type=STORIES&access_token=$igt',
+          'https://graph.instagram.com/v20.0/$userID/media_publish?media_type=STORIES&access_token=$igt',
         ];
         break;
       case 'SinglePost':
         finalUrl = [
-          'https://graph.instagram.com/v20.0/${item.userID}/media?access_token=${item.token}',
-          'https://graph.instagram.com/v20.0/${item.userID}/media_publish?access_token=${item.token}',
+          'https://graph.instagram.com/v20.0/$userID/media?access_token=$igt',
+          'https://graph.instagram.com/v20.0/$userID/media_publish?access_token=$igt',
         ];
         break;
       case 'CarouselPost':
         finalUrl = [
-          'https://graph.instagram.com/v20.0/${item.userID}/media?access_token=${item.token}',
-          'https://graph.instagram.com/v20.0/${item.userID}/media_publish?access_token=${item.token}',
+          'https://graph.instagram.com/v20.0/$userID/media?access_token=$igt',
+          'https://graph.instagram.com/v20.0/$userID/media_publish?access_token=$igt',
         ];
         break;
       case 'Reels':
         finalUrl = [
-          'https://graph.instagram.com/v20.0/${item.userID}/media?media_type=REELS&access_token=${item.token}',
-          'https://graph.instagram.com/v20.0/${item.userID}/media_publish?media_type=REELS&access_token=${item.token}',
+          'https://graph.instagram.com/v20.0/$userID/media?media_type=REELS&access_token=$igt',
+          'https://graph.instagram.com/v20.0/$userID/media_publish?media_type=REELS&access_token=$igt',
         ];
         break;
       default:
@@ -55,13 +49,9 @@ Future<Response> onRequest(RequestContext context) async {
     }
 
     String children = '';
-    final urls = item.data!['urls'];
-    List cSlidesUrls = [];
-    if (item.type == 'CarouselPost') {
+    if (type == 'CarouselPost') {
       if (urls != null) {
-        List slides = urls as List;
-        cSlidesUrls = slides;
-        for (var each in slides) {
+        for (var each in urls as List) {
           http.Response response = await http.post(
             Uri.parse(finalUrl[0]),
             body: {'image_url': each.toString(), 'is_carousel_item': 'true'},
@@ -79,16 +69,9 @@ Future<Response> onRequest(RequestContext context) async {
       }
     }
 
-    print('send request');
-    Map t = {
-      'children': children,
-      'media_type': 'CAROUSEL',
-      'caption': caption
-    };
-    print('carousel body: $t');
-    http.Response response = await http.post(Uri.parse(finalUrl[0]),
-        body: item.type != 'CarouselPost'
-            ? {'image_url': item.url, 'caption': caption}
+    final response = await http.post(Uri.parse(finalUrl[0]),
+        body: type != 'CarouselPost'
+            ? {'image_url': urls[0].toString(), 'caption': caption}
             : {
                 'children': children,
                 'media_type': 'CAROUSEL',
@@ -109,19 +92,16 @@ Future<Response> onRequest(RequestContext context) async {
       }
     }
 
+    // ignore: unawaited_futures
     http.delete(
       Uri.parse('https://igtoolspanel.ir/api/user/file'),
       headers: {
         'Authorization': 'OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw',
-        'User': item.ut,
+        'User': ut,
       },
-      body: item.type != 'CarouselPost'
-          ? {
-              'urls': cSlidesUrls,
-            }
-          : {
-              'urls': [item.url],
-            },
+      body: {
+        'urls': urls,
+      },
     );
 
     return Response(

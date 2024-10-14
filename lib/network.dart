@@ -93,4 +93,13 @@ class Network {
       print('Message not sent. Error: $e');
     }
   }
+
+  Future<int> globeSend(Map body) async {
+    http.Response response = await http.post(Uri.parse('$globeBase/globe/send'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body));
+    return response.statusCode;
+  }
 }
