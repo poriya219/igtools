@@ -5,7 +5,7 @@ import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
 class Network {
-  String globeBase = 'https://igtools-iqiy427-poriua219.globeapp.dev';
+  String globeBase = 'https://igtools-fb7wuih-poriua219.globeapp.dev';
   Future getAccountDetail(String token) async {
     http.Response response = await http.get(
       Uri.parse('$globeBase/globe/user/info?token=$token'),
@@ -100,6 +100,11 @@ class Network {
           'Content-Type': 'application/json',
         },
         body: jsonEncode(body));
+    print('send request results:');
+    print('status: ${response.statusCode}');
+    print('body: ${response.body}');
     return response.statusCode;
   }
 }
+
+// WD9CF0vloxWIiBzC7eLtORHj36OTlpLV

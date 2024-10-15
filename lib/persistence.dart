@@ -231,7 +231,7 @@ class FrogMysqlClient {
     await connect();
     final result = await _connection!.execute(
       Sql.named(
-          'INSERT INTO user_request_history (user_id, request_date, scheduled_time, ig_id, token, ig_token, urls, caption, type, status) VALUES (@userId, NOW(), @scheduled_time, @ig_id, @token, @ig_token, @urls, @caption, @type, @status)'),
+          'INSERT INTO user_request_history (user_id, request_date, scheduled_time, ig_id, token, ig_token, urls, caption, type, status) VALUES (@user_id, NOW(), @scheduled_time, @ig_id, @token, @ig_token, @urls, @caption, @type, @status)'),
       parameters: {
         'user_id': userId,
         'scheduled_time': scheduledTime,
@@ -248,10 +248,13 @@ class FrogMysqlClient {
   }
 
   Future<List<ResultRow>> getRequests() async {
+    await connect();
     final result = await _connection!.execute(
       Sql.named(
           "SELECT * FROM user_request_history WHERE date_trunc('minute', scheduled_time) = date_trunc('minute', NOW())"),
     );
+    print('requests list: ${result.toList()}');
+    await _connection!.close();
     return result.toList();
   }
 
