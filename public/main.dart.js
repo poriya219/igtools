@@ -89977,7 +89977,7 @@ return A.o(A.ft(),$async$tf)
 case 7:l=a1
 d=A.bt(J.ah(l.a,"token"))
 k=d==null?"":d
-j="http://localhost:8080/api/user/history?index="+m.ay
+j="https://igtoolspanel.ir/api/user/history?index="+m.ay
 e=t.z
 s=8
 return A.o(n.c.t4(0,j,A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",k],t.N,e)),e),$async$tf)
@@ -90013,7 +90013,7 @@ s=p}while(true)switch(s){case 0:p=4
 h=t.N
 g=t.z
 s=7
-return A.o(n.c.nw("http://localhost:8080/auth/signup",A.Q(["email",a,"password",b],h,h),A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw"],h,g)),g),$async$ts)
+return A.o(n.c.nw("https://igtoolspanel.ir/auth/signup",A.Q(["email",a,"password",b],h,h),A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw"],h,g)),g),$async$ts)
 case 7:m=a0
 A.bJ(m.c)
 s=m.c===201?8:9
@@ -90058,7 +90058,7 @@ h=t.N
 g=t.z
 f=A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw"],h,g))
 s=7
-return A.o(n.c.nw("http://localhost:8080/auth/signin",B.aO.n7(A.Q(["email",a,"password",b],h,h),null),f,g),$async$tr)
+return A.o(n.c.nw("https://igtoolspanel.ir/auth/signin",B.aO.n7(A.Q(["email",a,"password",b],h,h),null),f,g),$async$tr)
 case 7:m=a1
 A.bJ("s: "+A.e(m.c))
 s=m.c===200?8:9
@@ -90103,7 +90103,7 @@ k=t.N
 j=t.z
 i=A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw"],k,j))
 s=7
-return A.o(n.c.nw("http://localhost:8080/auth/forgot",B.aO.n7(A.Q(["email",a],k,k),null),i,j),$async$B7)
+return A.o(n.c.nw("https://igtoolspanel.ir/auth/forgot",B.aO.n7(A.Q(["email",a],k,k),null),i,j),$async$B7)
 case 7:m=c
 j=m.c
 k=j==null?0:j
@@ -90137,7 +90137,7 @@ f=A.bt(J.ah(n.a,"token"))
 m=f==null?"":f
 e=t.z
 s=7
-return A.o(o.c.t4(0,"http://localhost:8080/api/user/info",A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",m],t.N,e)),e),$async$lf)
+return A.o(o.c.t4(0,"https://igtoolspanel.ir/api/user/info",A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",m],t.N,e)),e),$async$lf)
 case 7:l=a1
 A.bJ(l.c)
 if(l.c===200){k=l.a
@@ -90182,7 +90182,7 @@ l=i==null?"":i
 h=t.z
 g=A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l,"Content-Type","application/json"],t.N,h))
 s=8
-return A.o(n.c.nw("http://localhost:8080/api/user/update",B.aO.n7(a,null),g,h),$async$t0)
+return A.o(n.c.nw("https://igtoolspanel.ir/api/user/update",B.aO.n7(a,null),g,h),$async$t0)
 case 8:k=c
 n.lf()
 h=k.c
@@ -90220,7 +90220,7 @@ i=t.N
 h=t.z
 g=A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l],i,h))
 s=8
-return A.o(n.c.nw("http://localhost:8080/api/user/p/accounts/add",B.aO.n7(A.Q(["code",a],i,i),null),g,h),$async$kJ)
+return A.o(n.c.nw("https://igtoolspanel.ir/api/user/p/accounts/add",B.aO.n7(A.Q(["code",a],i,i),null),g,h),$async$kJ)
 case 8:k=c
 if(k.c===201)n.lf()
 i=k.c
@@ -90271,7 +90271,7 @@ break}f=t.N
 e=t.z
 d=A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l,"Content-Type","application/json"],f,e))
 s=8
-return A.o(n.c.nw("http://localhost:8080/api/user/p/schedule",B.aO.n7(A.Q(["index",j.ay,"urls",a2,"time",k,"type",i,"caption",a],f,t.K),null),d,e),$async$nQ)
+return A.o(n.c.nw("https://igtoolspanel.ir/api/user/p/schedule",B.aO.n7(A.Q(["index",j.ay,"urls",a2,"time",k,"type",i,"caption",a],f,t.K),null),d,e),$async$nQ)
 case 8:h=a4
 e=h.c
 f=e==null?0:e
@@ -90359,7 +90359,7 @@ f=t.N
 e=t.z
 d=A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l,"Content-Type","application/json"],f,e))
 s=8
-return A.o(n.c.nw("http://localhost:8080/api/user/payment",B.aO.n7(A.Q(["id",a0],f,f),null),d,e),$async$uW)
+return A.o(n.c.nw("https://igtoolspanel.ir/api/user/payment",B.aO.n7(A.Q(["id",a0],f,f),null),d,e),$async$uW)
 case 8:k=a2
 A.bJ("purchase url: Status: "+A.e(k.c))
 A.bJ("purchase url: body: "+A.e(k.a))
@@ -90410,7 +90410,7 @@ b.a9U(e,B.lf)
 k=b
 A.bJ("formdata: "+A.e(k.e))
 s=9
-return A.o(n.c.nw("http://localhost:8080/api/user/file/upload",k,A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l,"Content-Type","multipart/form-data"],d,c)),c),$async$pF)
+return A.o(n.c.nw("https://igtoolspanel.ir/api/user/file/upload",k,A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l,"Content-Type","multipart/form-data"],d,c)),c),$async$pF)
 case 9:j=b0
 A.bJ("status: "+A.e(j.c))
 i=j.a
@@ -90447,7 +90447,7 @@ h=A.bt(J.ah(m.a,"token"))
 l=h==null?"":h
 g=t.z
 s=8
-return A.o(n.c.t4(0,"http://localhost:8080/api/user/plan/list",A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l],t.N,g)),g),$async$kt)
+return A.o(n.c.t4(0,"https://igtoolspanel.ir/api/user/plan/list",A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l],t.N,g)),g),$async$kt)
 case 8:k=b
 A.bJ(k.c)
 if(k.c===200){j=k.a
@@ -90484,7 +90484,7 @@ h=A.bt(J.ah(m.a,"token"))
 l=h==null?"":h
 g=t.z
 s=8
-return A.o(n.c.t4(0,"http://localhost:8080/api/user/plan",A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l],t.N,g)),g),$async$ku)
+return A.o(n.c.t4(0,"https://igtoolspanel.ir/api/user/plan",A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l],t.N,g)),g),$async$ku)
 case 8:k=b
 if(k.c===200){j=k.a
 q=j
@@ -90520,7 +90520,7 @@ h=A.bt(J.ah(m.a,"token"))
 l=h==null?"":h
 g=t.z
 s=8
-return A.o(n.c.t4(0,"http://localhost:8080/api/user/payment/history",A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l],t.N,g)),g),$async$tg)
+return A.o(n.c.t4(0,"https://igtoolspanel.ir/api/user/payment/history",A.jq(A.Q(["Authorization","OhyLPPlyynK8FraGgcHSKmIb9lgR1EKw","User",l],t.N,g)),g),$async$tg)
 case 8:k=b
 if(k.c===200){j=k.a
 A.bJ("payment history: "+A.e(j))

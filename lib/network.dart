@@ -5,7 +5,7 @@ import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
 class Network {
-  String globeBase = 'https://igtools-fb7wuih-poriua219.globeapp.dev';
+  String globeBase = 'https://igtools-globe-5ilnmwl-poriua219.globeapp.dev';
   Future getAccountDetail(String token) async {
     http.Response response = await http.get(
       Uri.parse('$globeBase/globe/user/info?token=$token'),
@@ -103,6 +103,29 @@ class Network {
     print('send request results:');
     print('status: ${response.statusCode}');
     print('body: ${response.body}');
+    return response.statusCode;
+  }
+
+  Future<int> replyToComment(String commentId, String token) async {
+    // final response = await http.post(Uri.parse('$globeBase/globe/comment'),
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: jsonEncode(
+    //         {'id': commentId, 'message': 'this is a test reply', 't': token}));
+    print('commentId: $commentId');
+    print('token: $token');
+    final response = await http.post(
+        Uri.parse(
+            'https://graph.instagram.com/v21.0/$commentId/replies?access_token=$token'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'message': 'this is a test reply :)',
+        }));
+    print(response.statusCode);
+    print(response.body);
     return response.statusCode;
   }
 }

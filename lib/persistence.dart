@@ -13,22 +13,28 @@ class FrogMysqlClient {
   }
   static final FrogMysqlClient _inst = FrogMysqlClient._internal();
 
+  final bool isDevMode = false;
+
   Connection? _connection;
 
   /// initialises a connection to database
   Future<void> connect() async {
     _connection = await Connection.open(
-        Endpoint(
-          // host: "igtools-db",
-          host: "127.0.0.1",
-          port: 5432,
-          username: 'postgres',
-          // username: 'root',
-          // password: "Bqr7kKtN2GbgAajCFfU1J2Jk",
-          password: "Po219219",
-          database: 'user_management',
-          // database: 'igtools',
-        ),
+        isDevMode
+            ? Endpoint(
+                host: "127.0.0.1",
+                port: 5432,
+                username: 'postgres',
+                password: "Po219219",
+                database: 'user_management',
+              )
+            : Endpoint(
+                host: "igtools-db",
+                port: 5432,
+                username: 'root',
+                password: "Bqr7kKtN2GbgAajCFfU1J2Jk",
+                database: 'igtools',
+              ),
         settings: ConnectionSettings(
           sslMode: SslMode.disable,
         ));
@@ -157,7 +163,7 @@ class FrogMysqlClient {
 
   Future<Map> getUserHistory(int id, int index) async {
     final listResult = await _connection!.execute(
-      Sql.named('SELECT * FROM user_strings WHERE user_id = @id'),
+      Sql.named('SELECT * FROM user_accounts WHERE user_id = @id'),
       parameters: {
         'id': id,
       },
@@ -165,16 +171,15 @@ class FrogMysqlClient {
     final accounts = listResult.toList();
     List<String> accountsList = [];
     for (ResultRow each in accounts) {
-      String e = each.toColumnMap()['string_value'].toString();
+      String e = each.toColumnMap()['ig_id'].toString();
       accountsList.add(e);
     }
-    String accountId = accountsList[index].split('#poqi#').last;
     final result = await _connection!.execute(
       Sql.named(
           'SELECT * FROM user_request_history WHERE user_id = @user_id and ig_id = @ig_id'),
       parameters: {
         'user_id': id,
-        'ig_id': accountId,
+        'ig_id': accountsList[index].toString(),
       },
     );
     final historyList = result.toList();
@@ -237,22 +242,41 @@ class FrogMysqlClient {
     return result.toList();
   }
 
-  Future<void> insertUserAccount(
-      String userId, String string, String expireAt) async {
+  Future<void> insertUserAccount(String userId, String token, String igId,
+      String expireAt, String pai) async {
     await _connection!.execute(
       Sql.named(
-          'INSERT INTO user_strings (user_id, string_value, expire_at) VALUES (@userId, @string, @expire_at)'),
+          'INSERT INTO user_accounts (user_id, token, ig_id, expire_at, pai) VALUES (@userId, @token, @ig_id, @expire_at, @pai)'),
       parameters: {
         'userId': userId,
-        'string': string,
+        'token': token,
+        'ig_id': igId,
         'expire_at': expireAt,
+        'pai': pai
+      },
+    );
+  }
+
+  Future<void> insertUserAccountWebhooks(
+    String userId,
+    String pai,
+  ) async {
+    await _connection!.execute(
+      Sql.named(
+          'INSERT INTO user_webhooks (user_id, pai, c, cfc, dfc) VALUES (@userId, @pai, @c, @cfc, @dfc)'),
+      parameters: {
+        'userId': userId,
+        'pai': pai,
+        'c': false,
+        'cfc': false,
+        'dfc': false,
       },
     );
   }
 
   Future<List> getUserAccounts(String id) async {
     final listResult = await _connection!.execute(
-      Sql.named('SELECT * FROM user_strings WHERE user_id = @id'),
+      Sql.named('SELECT * FROM user_accounts WHERE user_id = @id'),
       parameters: {
         'id': id,
       },
@@ -260,20 +284,22 @@ class FrogMysqlClient {
     final accounts = listResult.toList();
     List<String> accountsList = [];
     for (ResultRow each in accounts) {
-      String e = each.toColumnMap()['string_value'].toString();
+      String e = each.toColumnMap()['token'].toString();
       accountsList.add(e);
     }
     List<Future> requests = [];
     Network network = Network();
     for (var each in accountsList) {
-      String token = each.split('#poqi#').first;
-      String finalToken = token.split('bearer ').last;
+      String finalToken = each.split('bearer ').last;
       requests.add(network.getAccountDetail(finalToken));
     }
     List responses = await Future.wait(requests);
     List userAccounts = [];
     for (var each in responses) {
       Map map = jsonDecode(each.toString()) as Map;
+      String pai = map['user_id'].toString();
+      Map<String, dynamic> webhooksStatus = await getWebhooksStatus(pai);
+      map.addAll(webhooksStatus);
       userAccounts.add(map);
     }
     return userAccounts;
@@ -281,22 +307,25 @@ class FrogMysqlClient {
 
   Future<Map> getIGAccountInfo(String id, int index) async {
     final listResult = await _connection!.execute(
-      Sql.named('SELECT * FROM user_strings WHERE user_id = @id'),
+      Sql.named('SELECT * FROM user_accounts WHERE user_id = @id'),
       parameters: {
         'id': id,
       },
     );
     final accounts = listResult.toList();
-    List<String> accountsList = [];
+    List<Map<String, String>> accountsList = [];
     for (ResultRow each in accounts) {
-      String e = each.toColumnMap()['string_value'].toString();
-      accountsList.add(e);
+      String id = each.toColumnMap()['ig_id'].toString();
+      String token = each.toColumnMap()['token'].toString();
+      accountsList.add({
+        'ig_id': id,
+        'token': token,
+      });
     }
-    String value = accountsList[index];
-    List<String> temp = value.split('#poqi#');
+    Map<String, String> value = accountsList[index];
     return {
-      'token': temp[0].toString(),
-      'id': temp[1].toString(),
+      'token': value['token'].toString(),
+      'id': value['ig_id'].toString(),
     };
   }
 
@@ -480,7 +509,7 @@ class FrogMysqlClient {
     DateTime expire = now.add(const Duration(days: 2));
     String expireAt = '${expire.year}-${expire.month}-${expire.day}';
     final result = await _connection!.execute(
-      Sql.named('SELECT * FROM user_strings WHERE expire_at = @expireAt'),
+      Sql.named('SELECT * FROM user_accounts WHERE expire_at = @expireAt'),
       parameters: {
         'expireAt': expireAt,
       },
@@ -488,10 +517,12 @@ class FrogMysqlClient {
     List<Map> data = [];
     for (ResultRow each in result.toList()) {
       String id = each.toColumnMap()['id'].toString();
-      String string = each.toColumnMap()['string_value'].toString();
+      String igId = each.toColumnMap()['ig_id'].toString();
+      String token = each.toColumnMap()['token'].toString();
       data.add({
         'id': id,
-        'string': string,
+        'token': token,
+        'ig_id': igId,
       });
     }
     return data;
@@ -583,6 +614,49 @@ class FrogMysqlClient {
       data.insert(0, record);
     }
     return data;
+  }
+
+  Future<String> getIgToken(String igId) async {
+    final result = await _connection!.execute(
+      Sql.named('SELECT * FROM user_accounts WHERE pai = @pai'),
+      parameters: {
+        'pai': igId,
+      },
+    );
+    if (result.isNotEmpty) {
+      String token = result.first.toColumnMap()['token'].toString();
+      return token;
+    } else {
+      return '';
+    }
+  }
+
+  Future<Map<String, dynamic>> getWebhooksStatus(String pai) async {
+    final result = await _connection!.execute(
+      Sql.named('SELECT * FROM user_webhooks WHERE pai = @pai'),
+      parameters: {
+        'pai': pai,
+      },
+    );
+    if (result.isNotEmpty) {
+      bool c =
+          bool.tryParse(result.first.toColumnMap()['c'].toString()) ?? false;
+      bool cfc =
+          bool.tryParse(result.first.toColumnMap()['cfc'].toString()) ?? false;
+      bool dfc =
+          bool.tryParse(result.first.toColumnMap()['dfc'].toString()) ?? false;
+      return {
+        'c': c,
+        'cfc': cfc,
+        'dfc': dfc,
+      };
+    } else {
+      return {
+        'c': false,
+        'cfc': false,
+        'dfc': false,
+      };
+    }
   }
 
   Future<void> close() async {

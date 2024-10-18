@@ -11,12 +11,13 @@ Future<void> main() async {
   // Any additional setup code can go here.
 }
 
-Future<HttpServer> run(Handler handler, InternetAddress ip, int port) {
+Future<HttpServer> run(Handler handler, InternetAddress ip, int port) async {
   // print('load main');
-  print('version: 1.2.1');
+  print('version: 1.2.14');
 
   StateManager();
   DailyTimer();
+  await mysqlClient.connect();
   // 1. Execute any custom code prior to starting the server...
 
   // 2. Use the provided `handler`, `ip`, and `port` to create a custom `HttpServer`.

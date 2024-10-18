@@ -26,8 +26,8 @@ class DailyTimer {
         List<int> ids = [];
         List<String> accountIds = [];
         for (Map each in expiredTokens) {
-          String token = each['string'].toString().split('#poqi#').first;
-          String accountId = each['string'].toString().split('#poqi#').last;
+          String token = each['token'].toString();
+          String accountId = each['ig_id'].toString();
           String id = each['id'].toString();
           ids.add(int.tryParse(id) ?? 0);
           accountIds.add(accountId);
@@ -45,18 +45,19 @@ class DailyTimer {
           DateTime ex = DateTime.now().add(Duration(seconds: expireAt));
           String expireString = '${ex.year}-${ex.month}-${ex.day}';
           int index = responses.indexOf(each);
-          newTokens.add('$finalToken#poqi#${accountIds[index]}');
+          newTokens.add(finalToken);
           expireDates.add(expireString);
         }
         final query = """
-    UPDATE user_strings
-    SET string_value = sub.new_token, expire_at = sub.expire
+    UPDATE user_accounts
+    SET token = sub.new_token, expire_at = sub.expire, ig_id = sub.ig_id
     FROM (
       SELECT  unnest(ARRAY[${ids.map((id) => id.toString()).join(',')}])::INTEGER AS id,
        unnest(ARRAY[${newTokens.map((token) => "'$token'").join(',')}])::TEXT AS new_token,
+       unnest(ARRAY[${accountIds.map((igId) => "'$igId'").join(',')}])::TEXT AS ig_id,
        unnest(ARRAY[${expireDates.map((token) => "'$token'").join(',')}])::TEXT AS expire
     ) AS sub
-    WHERE user_strings.id = sub.id;
+    WHERE user_accounts.id = sub.id;
   """;
         await mysqlClient.updateData(query: query, data: {});
       }
